@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SmartHal.Core.Config.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SmartHal.Core.Shared\SmartHal.Core.Shared.csproj" />
     <ProjectReference Include="..\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
     <ProjectReference Include="..\SmartHal.Core.Adapters\SmartHal.Core.Adapters.csproj" />
