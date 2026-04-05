@@ -9,4 +9,8 @@
     <ProjectReference Include="..\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CreativeCoders.Core" />
+  </ItemGroup>
+
 </Project>
