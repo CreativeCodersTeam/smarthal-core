@@ -9,7 +9,7 @@ public class SmartHalSecretsExceptionTests
     {
         var ex = new SmartHalSecretNotFoundException("api-key");
 
-        ex.Message.Should().Be("Secret 'api-key' nicht gefunden.");
+        ex.Message.Should().Be("Secret 'api-key' was not found.");
         ex.SecretKey.Should().Be("api-key");
     }
 

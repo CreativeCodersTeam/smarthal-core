@@ -14,9 +14,10 @@ public class MacOsKeychainProvider : ISecretsProvider
     public string ProviderName => "macos";
 
     /// <summary>
-    /// Creates a new macOS Keychain provider.
+    /// Initializes a new instance of the <see cref="MacOsKeychainProvider"/> class.
     /// </summary>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
+    /// <exception cref="PlatformNotSupportedException">The current platform is not macOS.</exception>
     public MacOsKeychainProvider(string credentialNamespace = "SmartHal")
     {
         if (!OperatingSystem.IsMacOS())

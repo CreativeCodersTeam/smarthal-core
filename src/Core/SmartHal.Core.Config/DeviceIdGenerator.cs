@@ -67,6 +67,8 @@ public partial class DeviceIdGenerator : IIdGenerator
     /// Gets the prefix for a given adapter type using the prefix map.
     /// Falls back to the first 3-4 characters of the adapter type for unknown types.
     /// </summary>
+    /// <param name="adapterType">The adapter type identifier.</param>
+    /// <returns>The prefix string for the adapter type.</returns>
     internal static string GetPrefix(string adapterType)
     {
         if (PrefixMap.TryGetValue(adapterType, out var prefix))
@@ -83,6 +85,8 @@ public partial class DeviceIdGenerator : IIdGenerator
     /// Generates a URL-friendly slug from a device name.
     /// Converts umlauts, removes special characters, and enforces length limits.
     /// </summary>
+    /// <param name="deviceName">The device name to convert to a slug.</param>
+    /// <returns>A URL-friendly slug derived from the device name.</returns>
     internal static string GenerateSlug(string deviceName)
     {
         var result = deviceName.ToLowerInvariant();

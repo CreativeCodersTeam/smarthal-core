@@ -7,6 +7,10 @@ public class ConfigValidator : IConfigValidator
 {
     private readonly IConfigReader _reader;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigValidator"/> class.
+    /// </summary>
+    /// <param name="reader">The configuration reader used for parsing YAML files during validation.</param>
     public ConfigValidator(IConfigReader reader)
     {
         _reader = reader;

@@ -8,7 +8,7 @@ public class DeviceDiff
     /// <summary>Gets or sets the device identifier.</summary>
     public string DeviceId { get; set; } = string.Empty;
 
-    /// <summary>Gets whether there are any changes.</summary>
+    /// <summary>Gets a value that indicates whether there are any changes.</summary>
     public bool HasChanges => Changes.Count > 0;
 
     /// <summary>Gets or sets the list of individual changes.</summary>

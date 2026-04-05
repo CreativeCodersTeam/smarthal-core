@@ -28,7 +28,7 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     public string ProviderName => "file";
 
     /// <summary>
-    /// Creates a new encrypted file secrets provider.
+    /// Initializes a new instance of the <see cref="EncryptedFileSecretsProvider"/> class.
     /// </summary>
     /// <param name="passwordCallback">Callback to retrieve the master password when needed.</param>
     /// <param name="filePath">Path to the encrypted secrets file. Defaults to <c>~/.smarthal/secrets.enc</c>.</param>

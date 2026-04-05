@@ -8,5 +8,7 @@ namespace SmartHal.Core.Adapters;
 public interface IDeviceDiscovery
 {
     /// <summary>Discovers all devices available through this adapter.</summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A read-only list of discovered devices.</returns>
     Task<IReadOnlyList<Device>> DiscoverDevicesAsync(CancellationToken ct = default);
 }

@@ -5,7 +5,7 @@ namespace SmartHal.Core.Config;
 /// </summary>
 public class ValidationResult
 {
-    /// <summary>Gets whether the validation passed without errors.</summary>
+    /// <summary>Gets a value that indicates whether the validation passed without errors.</summary>
     public bool IsValid => Errors.Count == 0;
 
     /// <summary>Gets or sets the list of validation errors.</summary>

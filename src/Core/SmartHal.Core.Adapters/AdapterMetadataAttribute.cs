@@ -16,6 +16,11 @@ public class AdapterMetadataAttribute : Attribute
     /// <summary>Gets or sets an optional description of the adapter.</summary>
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AdapterMetadataAttribute"/> class.
+    /// </summary>
+    /// <param name="adapterType">The adapter type identifier.</param>
+    /// <param name="displayName">The human-readable display name.</param>
     public AdapterMetadataAttribute(string adapterType, string displayName)
     {
         AdapterType = adapterType;

@@ -14,6 +14,10 @@ public static partial class SecretKeyValidator
     /// <summary>
     /// Validates whether the given key follows the secret key naming convention.
     /// </summary>
+    /// <param name="key">The secret key to validate.</param>
+    /// <returns>
+    /// <see langword="true"/> if the key is valid; otherwise, <see langword="false"/>.
+    /// </returns>
     public static bool IsValid(string key) =>
         !string.IsNullOrWhiteSpace(key) && ValidKeyPattern().IsMatch(key);
 
@@ -21,6 +25,8 @@ public static partial class SecretKeyValidator
     /// Converts a secret key to its corresponding environment variable name.
     /// Example: <c>homematic-eg.api_key</c> becomes <c>SMARTHAL_HOMEMATIC_EG_API_KEY</c>.
     /// </summary>
+    /// <param name="key">The secret key to convert.</param>
+    /// <returns>The corresponding environment variable name.</returns>
     public static string ToEnvironmentVariable(string key) =>
         EnvironmentVariablePrefix + key.Replace('-', '_').Replace('.', '_').ToUpperInvariant();
 
@@ -28,6 +34,8 @@ public static partial class SecretKeyValidator
     /// Converts an environment variable name back to a secret key.
     /// Only works for variables with the <c>SMARTHAL_</c> prefix.
     /// </summary>
+    /// <param name="envVar">The environment variable name to convert.</param>
+    /// <returns>The corresponding secret key, or <see langword="null"/> if the variable does not have the expected prefix.</returns>
     public static string? FromEnvironmentVariable(string envVar)
     {
         if (!envVar.StartsWith(EnvironmentVariablePrefix, StringComparison.Ordinal))

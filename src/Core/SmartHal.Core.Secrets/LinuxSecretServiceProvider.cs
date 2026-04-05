@@ -14,9 +14,10 @@ public class LinuxSecretServiceProvider : ISecretsProvider
     public string ProviderName => "linux";
 
     /// <summary>
-    /// Creates a new Linux Secret Service provider.
+    /// Initializes a new instance of the <see cref="LinuxSecretServiceProvider"/> class.
     /// </summary>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
+    /// <exception cref="PlatformNotSupportedException">The current platform is not Linux.</exception>
     public LinuxSecretServiceProvider(string credentialNamespace = "SmartHal")
     {
         if (!OperatingSystem.IsLinux())

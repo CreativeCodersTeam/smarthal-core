@@ -14,7 +14,7 @@ public class Relation
     /// <summary>Gets or sets the target device identifier.</summary>
     public string TargetId { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets whether the relation is symmetric.</summary>
+    /// <summary>Gets or sets a value that indicates whether the relation is symmetric.</summary>
     public bool Symmetric { get; set; }
 
     /// <summary>Gets or sets the relation parameters.</summary>

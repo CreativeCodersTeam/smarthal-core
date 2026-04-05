@@ -26,21 +26,31 @@ public readonly record struct ParameterValue
     }
 
     /// <summary>Creates a string parameter value.</summary>
+    /// <param name="v">The string value.</param>
+    /// <returns>A new <see cref="ParameterValue"/> of kind <see cref="ParameterKind.String"/>.</returns>
     public static ParameterValue FromString(string v) => new ParameterValue(ParameterKind.String, stringValue: v);
 
     /// <summary>Creates a numeric parameter value.</summary>
+    /// <param name="v">The numeric value.</param>
+    /// <returns>A new <see cref="ParameterValue"/> of kind <see cref="ParameterKind.Number"/>.</returns>
     public static ParameterValue FromNumber(double v) => new ParameterValue(ParameterKind.Number, numberValue: v);
 
     /// <summary>Creates a boolean parameter value.</summary>
+    /// <param name="v">The boolean value.</param>
+    /// <returns>A new <see cref="ParameterValue"/> of kind <see cref="ParameterKind.Boolean"/>.</returns>
     public static ParameterValue FromBool(bool v) => new ParameterValue(ParameterKind.Boolean, boolValue: v);
 
     /// <summary>Creates an enum parameter value.</summary>
+    /// <param name="v">The enum value as string.</param>
+    /// <returns>A new <see cref="ParameterValue"/> of kind <see cref="ParameterKind.Enum"/>.</returns>
     public static ParameterValue FromEnum(string v) => new ParameterValue(ParameterKind.Enum, stringValue: v);
 
     /// <summary>
     /// Returns a new <see cref="ParameterValue"/> with the specified kind.
     /// Only converts <see cref="ParameterKind.String"/> to <see cref="ParameterKind.Enum"/>; other kinds are returned unchanged.
     /// </summary>
+    /// <param name="newKind">The desired parameter kind.</param>
+    /// <returns>A new <see cref="ParameterValue"/> with the updated kind, or the current instance if no conversion is needed.</returns>
     public ParameterValue WithKind(ParameterKind newKind) =>
         newKind == ParameterKind.Enum && Kind == ParameterKind.String
             ? FromEnum(StringValue!)

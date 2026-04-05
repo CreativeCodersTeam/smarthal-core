@@ -14,9 +14,10 @@ public class WindowsCredentialManagerProvider : ISecretsProvider
     public string ProviderName => "windows";
 
     /// <summary>
-    /// Creates a new Windows Credential Manager provider.
+    /// Initializes a new instance of the <see cref="WindowsCredentialManagerProvider"/> class.
     /// </summary>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
+    /// <exception cref="PlatformNotSupportedException">The current platform is not Windows.</exception>
     public WindowsCredentialManagerProvider(string credentialNamespace = "SmartHal")
     {
         if (!OperatingSystem.IsWindows())

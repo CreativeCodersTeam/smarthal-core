@@ -13,5 +13,9 @@ public interface ISmartHalAdapter : IAsyncDisposable
     string DisplayName { get; }
 
     /// <summary>Tests whether the adapter can connect to its backend system.</summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>
+    /// <see langword="true"/> if the connection was successful; otherwise, <see langword="false"/>.
+    /// </returns>
     Task<bool> TestConnectionAsync(CancellationToken ct = default);
 }

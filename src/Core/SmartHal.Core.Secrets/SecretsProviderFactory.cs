@@ -9,11 +9,11 @@ public class SecretsProviderFactory
     private readonly Func<Task<string>>? _passwordCallback;
 
     /// <summary>
-    /// Creates a new factory instance.
+    /// Initializes a new instance of the <see cref="SecretsProviderFactory"/> class.
     /// </summary>
     /// <param name="passwordCallback">
     /// Callback for the master password, required by the <see cref="EncryptedFileSecretsProvider"/>.
-    /// May be <c>null</c> if only non-file providers are used.
+    /// May be <see langword="null"/> if only non-file providers are used.
     /// </param>
     public SecretsProviderFactory(Func<Task<string>>? passwordCallback = null)
     {
@@ -24,9 +24,9 @@ public class SecretsProviderFactory
     /// Creates a secrets provider based on the given name.
     /// </summary>
     /// <param name="providerName">The provider name (e.g. "env", "file", "windows", "macos", "linux", "auto").</param>
-    /// <param name="configPath">Optional config path for the file provider.</param>
+    /// <param name="configPath">The optional configuration path for the file provider.</param>
     /// <returns>A configured <see cref="ISecretsProvider"/> instance.</returns>
-    /// <exception cref="SmartHalSecretsProviderException">Thrown for unknown provider names.</exception>
+    /// <exception cref="SmartHalSecretsProviderException">The provider name is unknown.</exception>
     public ISecretsProvider Create(string providerName, string? configPath = null) => providerName switch
     {
         "env" => new EnvironmentVariableSecretsProvider(),

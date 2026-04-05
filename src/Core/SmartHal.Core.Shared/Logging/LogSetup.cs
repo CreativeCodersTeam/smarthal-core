@@ -44,6 +44,8 @@ public static class LogSetup
     /// <summary>
     /// Maps a <see cref="LogVerbosity"/> value to the corresponding Serilog <see cref="LogEventLevel"/>.
     /// </summary>
+    /// <param name="verbosity">The verbosity level to map.</param>
+    /// <returns>The corresponding <see cref="LogEventLevel"/>.</returns>
     internal static LogEventLevel MapVerbosityToLevel(LogVerbosity verbosity) => verbosity switch
     {
         LogVerbosity.Quiet => LogEventLevel.Warning,

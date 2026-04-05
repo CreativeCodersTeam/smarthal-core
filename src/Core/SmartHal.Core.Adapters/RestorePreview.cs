@@ -11,6 +11,6 @@ public class RestorePreview
     /// <summary>Gets or sets the list of parameter changes.</summary>
     public IReadOnlyList<ParameterChange> Changes { get; set; } = [];
 
-    /// <summary>Gets or sets whether the device needs a restart after restore.</summary>
+    /// <summary>Gets or sets a value that indicates whether the device needs a restart after restore.</summary>
     public bool RequiresDeviceRestart { get; set; }
 }

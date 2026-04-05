@@ -236,6 +236,8 @@ public class FileConfigRepository : IConfigRepository
     /// <summary>
     /// Converts a simple glob pattern (supporting * and ?) to a regex.
     /// </summary>
+    /// <param name="pattern">The glob pattern to convert.</param>
+    /// <returns>A compiled <see cref="Regex"/> equivalent of the glob pattern.</returns>
     private static Regex GlobToRegex(string pattern)
     {
         var escaped = Regex.Escape(pattern)

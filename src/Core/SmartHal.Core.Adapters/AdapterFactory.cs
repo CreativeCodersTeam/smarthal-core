@@ -15,6 +15,8 @@ public class AdapterFactory : IAdapterFactory
     /// Registers an assembly for adapter discovery. Scans all classes that implement
     /// <see cref="ISmartHalAdapter"/> and are decorated with <see cref="AdapterMetadataAttribute"/>.
     /// </summary>
+    /// <param name="assembly">The assembly to scan for adapter implementations.</param>
+    /// <exception cref="SmartHalAdapterException">An adapter type from this assembly is already registered.</exception>
     public void RegisterAssembly(Assembly assembly)
     {
         Ensure.NotNull(assembly);
