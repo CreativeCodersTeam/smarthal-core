@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SmartHal.CLI</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Shared\SmartHal.Core.Shared.csproj" />
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Adapters\SmartHal.Core.Adapters.csproj" />
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Config\SmartHal.Core.Config.csproj" />
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Backup\SmartHal.Core.Backup.csproj" />
+    <ProjectReference Include="..\..\Core\SmartHal.Core.Secrets\SmartHal.Core.Secrets.csproj" />
+    <ProjectReference Include="..\..\Adapters\SmartHal.Adapter.HomeMatic\SmartHal.Adapter.HomeMatic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CreativeCoders.Cli.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+</Project>

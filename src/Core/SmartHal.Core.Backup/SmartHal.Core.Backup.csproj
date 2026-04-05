@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SmartHal.Core.Backup</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartHal.Core.Shared\SmartHal.Core.Shared.csproj" />
+    <ProjectReference Include="..\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
+    <ProjectReference Include="..\SmartHal.Core.Config\SmartHal.Core.Config.csproj" />
+  </ItemGroup>
+
+</Project>

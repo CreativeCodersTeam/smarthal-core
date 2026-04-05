@@ -1,0 +1,25 @@
+<Project>
+  <ItemGroup>
+    <!-- Serialization -->
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
+
+    <!-- Logging -->
+    <PackageVersion Include="Serilog" Version="4.3.1" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+
+    <!-- CLI -->
+    <PackageVersion Include="CreativeCoders.Cli.Hosting" Version="6.7.1" />
+
+    <!-- DI -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+
+    <!-- Testing -->
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="FakeItEasy" Version="9.0.1" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+</Project>

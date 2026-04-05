@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/Adapters/">
+    <Project Path="src/Adapters/SmartHal.Adapter.HomeMatic/SmartHal.Adapter.HomeMatic.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="src/Core/SmartHal.Core.Adapters/SmartHal.Core.Adapters.csproj" />
+    <Project Path="src/Core/SmartHal.Core.Backup/SmartHal.Core.Backup.csproj" />
+    <Project Path="src/Core/SmartHal.Core.Config/SmartHal.Core.Config.csproj" />
+    <Project Path="src/Core/SmartHal.Core.Devices/SmartHal.Core.Devices.csproj" />
+    <Project Path="src/Core/SmartHal.Core.Secrets/SmartHal.Core.Secrets.csproj" />
+    <Project Path="src/Core/SmartHal.Core.Shared/SmartHal.Core.Shared.csproj" />
+  </Folder>
+  <Folder Name="/Shells/">
+    <Project Path="src/Shells/SmartHal.CLI/SmartHal.CLI.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/SmartHal.Adapter.HomeMatic.Tests/SmartHal.Adapter.HomeMatic.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Adapters.Tests/SmartHal.Core.Adapters.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Backup.Tests/SmartHal.Core.Backup.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Config.Tests/SmartHal.Core.Config.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Devices.Tests/SmartHal.Core.Devices.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Secrets.Tests/SmartHal.Core.Secrets.Tests.csproj" />
+    <Project Path="tests/SmartHal.Core.Shared.Tests/SmartHal.Core.Shared.Tests.csproj" />
+    <Project Path="tests/SmartHal.Integration.Tests/SmartHal.Integration.Tests.csproj" />
+  </Folder>
+</Solution>

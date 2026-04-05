@@ -1,0 +1,3 @@
+[*.cs]
+# Disable ConfigureAwait warning in test projects
+dotnet_diagnostic.CA2007.severity = none

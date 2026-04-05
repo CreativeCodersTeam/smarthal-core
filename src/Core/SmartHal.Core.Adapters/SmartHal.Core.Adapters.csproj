@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SmartHal.Core.Adapters</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartHal.Core.Shared\SmartHal.Core.Shared.csproj" />
+    <ProjectReference Include="..\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
+  </ItemGroup>
+
+</Project>

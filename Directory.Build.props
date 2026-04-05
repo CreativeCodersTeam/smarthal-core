@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <Authors>SmartHal Contributors</Authors>
+    <Company>SmartHal</Company>
+    <Product>SmartHal</Product>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>
