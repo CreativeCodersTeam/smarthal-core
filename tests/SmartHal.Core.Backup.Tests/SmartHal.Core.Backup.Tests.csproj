@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\SmartHal.Core.Backup\SmartHal.Core.Backup.csproj" />
+    <ProjectReference Include="..\..\src\Core\SmartHal.Core.Config\SmartHal.Core.Config.csproj" />
+    <ProjectReference Include="..\..\src\Core\SmartHal.Core.Devices\SmartHal.Core.Devices.csproj" />
   </ItemGroup>
 
 </Project>
