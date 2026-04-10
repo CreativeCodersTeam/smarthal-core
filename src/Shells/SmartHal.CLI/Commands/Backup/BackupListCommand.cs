@@ -1,23 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Backup;
-
-/// <summary>Options for the backup list command.</summary>
-public class BackupListOptions
-{
-    /// <summary>Filter by scope.</summary>
-    [OptionParameter('s', "scope", HelpText = "Filter by scope (Device, Adapter, Room, All)")]
-    public string? Scope { get; set; }
-
-    /// <summary>Filter by minimum date.</summary>
-    [OptionParameter(default(char), "since", HelpText = "Show only snapshots since this date")]
-    public string? Since { get; set; }
-}
 
 /// <summary>
 /// Lists existing snapshots.

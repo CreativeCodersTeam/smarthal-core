@@ -3,6 +3,7 @@
     <!-- Serialization -->
     <PackageVersion Include="CreativeCoders.Core" Version="6.7.1" />
     <PackageVersion Include="Devlooped.CredentialManager" Version="2.7.0" />
+    <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <!-- Logging -->
     <PackageVersion Include="Serilog" Version="4.3.1" />

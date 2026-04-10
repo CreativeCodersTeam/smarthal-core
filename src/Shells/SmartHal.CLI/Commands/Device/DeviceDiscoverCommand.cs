@@ -1,19 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Device;
-
-/// <summary>Options for the device discover command.</summary>
-public class DeviceDiscoverOptions
-{
-    /// <summary>The adapter ID to discover devices from.</summary>
-    [OptionValue(0, HelpText = "The adapter ID to discover devices from")]
-    public string AdapterId { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Discovers devices via the specified adapter and offers to import them.
@@ -35,7 +26,7 @@ public class DeviceDiscoverCommand(
 
         if (adapter is not IDeviceDiscovery discovery)
         {
-            OutputFormatter.WriteError($"Adapter '{options.AdapterId}' does not support device discovery.");
+            formatter.WriteError($"Adapter '{options.AdapterId}' does not support device discovery.");
             return new CommandResult(1);
         }
 
@@ -43,7 +34,7 @@ public class DeviceDiscoverCommand(
 
         if (discovered.Count == 0)
         {
-            OutputFormatter.WriteSuccess("No new devices discovered.");
+            formatter.WriteSuccess("No new devices discovered.");
             return CommandResult.Success;
         }
 
@@ -68,7 +59,7 @@ public class DeviceDiscoverCommand(
             device.AdapterId = options.AdapterId;
 
             await configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
-            OutputFormatter.WriteSuccess($"Imported as '{deviceId}'.");
+            formatter.WriteSuccess($"Imported as '{deviceId}'.");
         }
 
         return CommandResult.Success;

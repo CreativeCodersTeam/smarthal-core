@@ -1,22 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
+using Spectre.Console;
 
 namespace SmartHal.CLI.Commands.Backup;
-
-/// <summary>Options for the backup restore command.</summary>
-public class BackupRestoreOptions
-{
-    /// <summary>The snapshot ID to restore.</summary>
-    [OptionValue(0, HelpText = "The snapshot ID to restore")]
-    public string SnapshotId { get; set; } = string.Empty;
-
-    /// <summary>Preview changes without applying.</summary>
-    [OptionParameter('d', "dry-run", HelpText = "Preview changes without restoring")]
-    public bool DryRun { get; set; }
-}
 
 /// <summary>
 /// Restores a configuration snapshot.
@@ -26,6 +14,7 @@ public class BackupRestoreOptions
 public class BackupRestoreCommand(
     IRestoreOrchestrator orchestrator,
     IUserInteraction interaction,
+    IAnsiConsole console,
     OutputFormatter formatter) : ICliCommand<BackupRestoreOptions>
 {
     /// <inheritdoc />
@@ -35,7 +24,7 @@ public class BackupRestoreCommand(
 
         if (!preview.HasChanges)
         {
-            OutputFormatter.WriteSuccess("No changes to restore — snapshot matches current state.");
+            formatter.WriteSuccess("No changes to restore — snapshot matches current state.");
             return CommandResult.Success;
         }
 
@@ -46,7 +35,8 @@ public class BackupRestoreCommand(
 
         foreach (var device in changedDevices)
         {
-            Console.Error.WriteLine($"  Device: {device.DeviceId} {(device.DeviceExists ? "" : "(deleted)")}");
+            console.MarkupLine(
+                $"  Device: [bold]{Markup.Escape(device.DeviceId)}[/] {(device.DeviceExists ? "" : "[dim](deleted)[/]")}");
             formatter.WriteTable(
                 device.Diff.Changes.ToList(),
                 ("Kind", c => c.Kind.ToString()),
@@ -57,26 +47,26 @@ public class BackupRestoreCommand(
 
         if (options.DryRun)
         {
-            OutputFormatter.WriteSuccess("Dry run — no changes applied.");
+            formatter.WriteSuccess("Dry run — no changes applied.");
             return CommandResult.Success;
         }
 
         if (!interaction.Confirm("Proceed with restore?"))
         {
-            OutputFormatter.WriteSuccess("Cancelled.");
+            formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
         var result = await orchestrator.RestoreAsync(options.SnapshotId).ConfigureAwait(false);
 
-        OutputFormatter.WriteSuccess(
+        formatter.WriteSuccess(
             $"Restored {result.DevicesRestored} device(s), {result.DevicesSkipped} skipped.");
 
         if (!result.Success)
         {
             foreach (var error in result.Errors)
             {
-                OutputFormatter.WriteError($"  {error.DeviceId}: {error.Message}");
+                formatter.WriteError($"  {error.DeviceId}: {error.Message}");
             }
         }
 

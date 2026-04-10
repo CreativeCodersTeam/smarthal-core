@@ -1,18 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
+using Spectre.Console;
 
 namespace SmartHal.CLI.Commands.Backup;
-
-/// <summary>Options for the backup show command.</summary>
-public class BackupShowOptions
-{
-    /// <summary>The snapshot ID to display.</summary>
-    [OptionValue(0, HelpText = "The snapshot ID to display")]
-    public string SnapshotId { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Shows details of a specific snapshot.
@@ -21,6 +13,7 @@ public class BackupShowOptions
 [CliCommand(["backup", "show"], Name = "show", Description = "Show snapshot details")]
 public class BackupShowCommand(
     ISnapshotManager snapshotManager,
+    IAnsiConsole console,
     OutputFormatter formatter) : ICliCommand<BackupShowOptions>
 {
     /// <inheritdoc />
@@ -41,7 +34,7 @@ public class BackupShowCommand(
 
         if (manifest.Entries.Count > 0)
         {
-            Console.WriteLine();
+            console.WriteLine();
             formatter.WriteTable(
                 manifest.Entries.ToList(),
                 ("Device ID", e => e.DeviceId),

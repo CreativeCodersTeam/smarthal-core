@@ -6,6 +6,7 @@ using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 using SmartHal.Core;
 using SmartHal.Core.Secrets;
+using Spectre.Console.Testing;
 
 namespace SmartHal.CLI.Commands;
 
@@ -21,6 +22,7 @@ public class SecretCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
         var factory = new SecretsProviderFactory();
+        var console = new TestConsole();
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
@@ -28,20 +30,16 @@ public class SecretCommandTests
         // Set the env var that the provider expects (prefix SMARTHAL_)
         Environment.SetEnvironmentVariable("SMARTHAL_TEST_KEY", "hello_world");
 
-        var command = new SecretGetCommand(cliContext, repo, factory);
+        var command = new SecretGetCommand(cliContext, repo, factory, console);
 
-        var original = Console.Out;
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
         try
         {
             var result = await command.ExecuteAsync(new SecretGetOptions { Key = "test.key" });
             result.Should().Be(CommandResult.Success);
-            writer.ToString().Trim().Should().Be("hello_world");
+            console.Output.Trim().Should().Be("hello_world");
         }
         finally
         {
-            Console.SetOut(original);
             Environment.SetEnvironmentVariable("SMARTHAL_TEST_KEY", null);
         }
     }
@@ -53,11 +51,13 @@ public class SecretCommandTests
         var repo = A.Fake<IConfigRepository>();
         var factory = new SecretsProviderFactory();
         var interaction = A.Fake<IUserInteraction>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
 
-        var command = new SecretSetCommand(cliContext, repo, factory, interaction);
+        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter);
 
         // Env provider is read-only, so set should throw
         await Assert.ThrowsAsync<SmartHalSecretsProviderException>(
@@ -71,21 +71,14 @@ public class SecretCommandTests
         var repo = A.Fake<IConfigRepository>();
         var factory = new SecretsProviderFactory();
         var interaction = A.Fake<IUserInteraction>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
-        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction);
+        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction, formatter);
 
-        var origErr = Console.Error;
-        Console.SetError(new StringWriter());
-        try
-        {
-            var result = await command.ExecuteAsync(new SecretDeleteOptions { Key = "some_key" });
-            result.Should().Be(CommandResult.Success);
-        }
-        finally
-        {
-            Console.SetError(origErr);
-        }
+        var result = await command.ExecuteAsync(new SecretDeleteOptions { Key = "some_key" });
+        result.Should().Be(CommandResult.Success);
 
         // When cancelled, the meta config should never be loaded
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._)).MustNotHaveHappened();
@@ -97,23 +90,15 @@ public class SecretCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
         var factory = new SecretsProviderFactory();
-        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json });
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json }, console);
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
 
         var command = new SecretListCommand(cliContext, repo, factory, formatter);
 
-        var original = Console.Out;
-        Console.SetOut(new StringWriter());
-        try
-        {
-            var result = await command.ExecuteAsync();
-            result.Should().Be(CommandResult.Success);
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
+        var result = await command.ExecuteAsync();
+        result.Should().Be(CommandResult.Success);
     }
 }

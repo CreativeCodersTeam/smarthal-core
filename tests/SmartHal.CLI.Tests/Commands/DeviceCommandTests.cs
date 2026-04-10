@@ -4,6 +4,7 @@ using FakeItEasy;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
+using Spectre.Console.Testing;
 
 namespace SmartHal.CLI.Tests.Commands;
 
@@ -13,25 +14,17 @@ public class DeviceCommandTests
     public async Task DeviceList_CallsRepositoryWithFilter()
     {
         var repo = A.Fake<IConfigRepository>();
-        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json });
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json }, console);
 
         A.CallTo(() => repo.ListDevicesAsync(A<DeviceFilter>._, A<CancellationToken>._))
             .Returns(new List<DeviceSummary>());
 
         var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter);
 
-        var original = Console.Out;
-        Console.SetOut(new StringWriter());
-        try
-        {
-            var result = await command.ExecuteAsync(
-                new CLI.Commands.Device.DeviceListOptions { AdapterId = "hm1" });
-            result.Should().Be(CommandResult.Success);
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
+        var result = await command.ExecuteAsync(
+            new CLI.Commands.Device.DeviceListOptions { AdapterId = "hm1" });
+        result.Should().Be(CommandResult.Success);
 
         A.CallTo(() => repo.ListDevicesAsync(
             A<DeviceFilter>.That.Matches(f => f.AdapterId == "hm1"),
@@ -42,7 +35,8 @@ public class DeviceCommandTests
     public async Task DeviceShow_LoadsFullDevice()
     {
         var repo = A.Fake<IConfigRepository>();
-        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json });
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json }, console);
         var device = new Device
         {
             Id = "smhal-hm-lamp",
@@ -61,23 +55,13 @@ public class DeviceCommandTests
 
         var command = new CLI.Commands.Device.DeviceShowCommand(repo, formatter);
 
-        var original = Console.Out;
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        try
-        {
-            var result = await command.ExecuteAsync(
-                new CLI.Commands.Device.DeviceShowOptions { DeviceId = "smhal-hm-lamp" });
+        var result = await command.ExecuteAsync(
+            new CLI.Commands.Device.DeviceShowOptions { DeviceId = "smhal-hm-lamp" });
 
-            result.Should().Be(CommandResult.Success);
-            var output = writer.ToString();
-            output.Should().Contain("smhal-hm-lamp");
-            output.Should().Contain("Lamp");
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
+        result.Should().Be(CommandResult.Success);
+        var output = console.Output;
+        output.Should().Contain("smhal-hm-lamp");
+        output.Should().Contain("Lamp");
     }
 
     [Fact]
@@ -85,6 +69,8 @@ public class DeviceCommandTests
     {
         var repo = A.Fake<IConfigRepository>();
         var adapterFactory = A.Fake<Core.Adapters.IAdapterFactory>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(new CliContext(), console);
         var adapterMock = A.Fake<ITestWriterAdapter>();
         var device = new Device
         {
@@ -109,25 +95,16 @@ public class DeviceCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(adapterConfig);
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapterMock);
 
-        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory);
+        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory, formatter);
 
-        var origErr = Console.Error;
-        Console.SetError(new StringWriter());
-        try
+        var result = await command.ExecuteAsync(new CLI.Commands.Device.DeviceSetOptions
         {
-            var result = await command.ExecuteAsync(new CLI.Commands.Device.DeviceSetOptions
-            {
-                DeviceId = "dev1",
-                Parameter = "level",
-                Value = "0.5"
-            });
+            DeviceId = "dev1",
+            Parameter = "level",
+            Value = "0.5"
+        });
 
-            result.Should().Be(CommandResult.Success);
-        }
-        finally
-        {
-            Console.SetError(origErr);
-        }
+        result.Should().Be(CommandResult.Success);
 
         A.CallTo(() => adapterMock.WriteDeviceParameterAsync(
             "123", "level", A<ParameterValue>._, A<CancellationToken>._))

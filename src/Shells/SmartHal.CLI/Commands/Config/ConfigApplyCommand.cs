@@ -1,23 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Config;
-
-/// <summary>Options for the config apply command.</summary>
-public class ConfigApplyOptions
-{
-    /// <summary>The device ID to apply configuration to.</summary>
-    [OptionValue(0, HelpText = "The device ID to apply configuration to")]
-    public string DeviceId { get; set; } = string.Empty;
-
-    /// <summary>Preview changes without applying.</summary>
-    [OptionParameter('d', "dry-run", HelpText = "Preview changes without applying")]
-    public bool DryRun { get; set; }
-}
 
 /// <summary>
 /// Writes YAML configuration values to the adapter for a specific device.
@@ -41,7 +28,7 @@ public class ConfigApplyCommand(
 
         if (adapter is not IDeviceReader reader)
         {
-            OutputFormatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
+            formatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
             return new CommandResult(1);
         }
 
@@ -50,7 +37,7 @@ public class ConfigApplyCommand(
 
         if (!diff.HasChanges)
         {
-            OutputFormatter.WriteSuccess("No changes to apply.");
+            formatter.WriteSuccess("No changes to apply.");
             return CommandResult.Success;
         }
 
@@ -63,13 +50,13 @@ public class ConfigApplyCommand(
 
         if (options.DryRun)
         {
-            OutputFormatter.WriteSuccess("Dry run — no changes applied.");
+            formatter.WriteSuccess("Dry run — no changes applied.");
             return CommandResult.Success;
         }
 
         await applier.ApplyDiffAsync(diff, adapter, device.NativeId).ConfigureAwait(false);
 
-        OutputFormatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to device '{options.DeviceId}'.");
+        formatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to device '{options.DeviceId}'.");
         return CommandResult.Success;
     }
 }

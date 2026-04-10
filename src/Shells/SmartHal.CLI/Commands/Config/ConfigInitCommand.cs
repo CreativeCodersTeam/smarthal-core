@@ -1,18 +1,9 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Config;
-
-/// <summary>Options for the config init command.</summary>
-public class ConfigInitOptions
-{
-    /// <summary>Override the configuration path.</summary>
-    [OptionParameter('p', "path", HelpText = "Override the configuration path")]
-    public string? Path { get; set; }
-}
 
 /// <summary>
 /// Initializes the SmartHal configuration directory structure.
@@ -22,7 +13,8 @@ public class ConfigInitOptions
 public class ConfigInitCommand(
     CliContext cliContext,
     IConfigRepository configRepository,
-    IUserInteraction interaction) : ICliCommand<ConfigInitOptions>
+    IUserInteraction interaction,
+    OutputFormatter formatter) : ICliCommand<ConfigInitOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigInitOptions options)
@@ -44,7 +36,7 @@ public class ConfigInitCommand(
 
         await configRepository.InitializeAsync(meta).ConfigureAwait(false);
 
-        OutputFormatter.WriteSuccess($"Configuration initialized at {configPath}");
+        formatter.WriteSuccess($"Configuration initialized at {configPath}");
         return CommandResult.Success;
     }
 }

@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
+using Spectre.Console;
 
 namespace SmartHal.CLI.Commands.Adapter;
 
@@ -14,14 +15,15 @@ namespace SmartHal.CLI.Commands.Adapter;
 public class AdapterListCommand(
     IAdapterFactory adapterFactory,
     IConfigRepository configRepository,
+    IAnsiConsole console,
     OutputFormatter formatter) : ICliCommand
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync()
     {
         var types = adapterFactory.GetAvailableAdapterTypes();
-        Console.Error.WriteLine($"Registered adapter types: {string.Join(", ", types)}");
-        Console.Error.WriteLine();
+        console.MarkupLine($"Registered adapter types: [bold]{Markup.Escape(string.Join(", ", types))}[/]");
+        console.WriteLine();
 
         var configs = await configRepository.GetAllAdapterConfigsAsync().ConfigureAwait(false);
 

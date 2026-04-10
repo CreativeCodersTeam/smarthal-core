@@ -1,5 +1,6 @@
 using SmartHal.CLI.Infrastructure;
 using AwesomeAssertions;
+using Spectre.Console.Testing;
 
 namespace SmartHal.CLI.Infrastructure;
 
@@ -8,20 +9,21 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_JsonFormat_WritesValidJson()
     {
+        var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Json };
-        var formatter = new OutputFormatter(context);
+        var formatter = new OutputFormatter(context, console);
         var items = new List<TestItem>
         {
             new() { Name = "Alpha", Value = 1 },
             new() { Name = "Beta", Value = 2 }
         };
 
-        var output = CaptureStdout(() =>
-            formatter.WriteTable(
-                items,
-                ("Name", i => i.Name),
-                ("Value", i => i.Value.ToString())));
+        formatter.WriteTable(
+            items,
+            ("Name", i => i.Name),
+            ("Value", i => i.Value.ToString()));
 
+        var output = console.Output;
         output.Should().Contain("\"name\"");
         output.Should().Contain("\"Alpha\"");
         output.Should().Contain("\"Beta\"");
@@ -30,19 +32,20 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_YamlFormat_WritesYaml()
     {
+        var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Yaml };
-        var formatter = new OutputFormatter(context);
+        var formatter = new OutputFormatter(context, console);
         var items = new List<TestItem>
         {
             new() { Name = "Alpha", Value = 1 }
         };
 
-        var output = CaptureStdout(() =>
-            formatter.WriteTable(
-                items,
-                ("Name", i => i.Name),
-                ("Value", i => i.Value.ToString())));
+        formatter.WriteTable(
+            items,
+            ("Name", i => i.Name),
+            ("Value", i => i.Value.ToString()));
 
+        var output = console.Output;
         // YamlDotNet serializes list items with "- " prefix and underscore naming
         output.Should().Contain("Alpha");
         output.Should().Contain("1");
@@ -51,30 +54,31 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_TableFormat_EmptyList_WritesNoItemsMessage()
     {
+        var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Table };
-        var formatter = new OutputFormatter(context);
+        var formatter = new OutputFormatter(context, console);
 
-        var stderr = CaptureStderr(() =>
-            formatter.WriteTable(
-                new List<TestItem>(),
-                ("Name", i => i.Name)));
+        formatter.WriteTable(
+            new List<TestItem>(),
+            ("Name", i => i.Name));
 
-        stderr.Should().Contain("No items found");
+        console.Output.Should().Contain("No items found");
     }
 
     [Fact]
     public void WriteObject_JsonFormat_WritesValidJson()
     {
+        var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Json };
-        var formatter = new OutputFormatter(context);
+        var formatter = new OutputFormatter(context, console);
         var item = new TestItem { Name = "Gamma", Value = 42 };
 
-        var output = CaptureStdout(() =>
-            formatter.WriteObject(
-                item,
-                ("Name", "Gamma"),
-                ("Value", "42")));
+        formatter.WriteObject(
+            item,
+            ("Name", "Gamma"),
+            ("Value", "42"));
 
+        var output = console.Output;
         output.Should().Contain("\"name\"");
         output.Should().Contain("\"Gamma\"");
         output.Should().Contain("42");
@@ -83,16 +87,17 @@ public class OutputFormatterTests
     [Fact]
     public void WriteObject_TableFormat_WritesLabelValuePairs()
     {
+        var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Table };
-        var formatter = new OutputFormatter(context);
+        var formatter = new OutputFormatter(context, console);
         var item = new TestItem { Name = "Delta", Value = 7 };
 
-        var output = CaptureStdout(() =>
-            formatter.WriteObject(
-                item,
-                ("Name", "Delta"),
-                ("Value", "7")));
+        formatter.WriteObject(
+            item,
+            ("Name", "Delta"),
+            ("Value", "7"));
 
+        var output = console.Output;
         output.Should().Contain("Name");
         output.Should().Contain("Delta");
         output.Should().Contain("Value");
@@ -102,6 +107,10 @@ public class OutputFormatterTests
     [Fact]
     public void WriteValidationResults_ErrorsAndWarnings_FormatsCorrectly()
     {
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+
         var errors = new List<(string Code, string Message, string? FilePath)>
         {
             ("CFG-001", "Missing adapter reference", "devices/test.yaml")
@@ -111,57 +120,64 @@ public class OutputFormatterTests
             ("CFG-W01", "Empty room", null)
         };
 
-        var stderr = CaptureStderr(() =>
-            OutputFormatter.WriteValidationResults(errors, warnings));
+        formatter.WriteValidationResults(errors, warnings);
 
-        stderr.Should().Contain("1 error(s)");
-        stderr.Should().Contain("1 warning(s)");
-        stderr.Should().Contain("[CFG-001]");
-        stderr.Should().Contain("Missing adapter reference");
-        stderr.Should().Contain("devices/test.yaml");
-        stderr.Should().Contain("[CFG-W01]");
-        stderr.Should().Contain("Empty room");
+        var output = console.Output;
+        output.Should().Contain("1 error(s)");
+        output.Should().Contain("1 warning(s)");
+        output.Should().Contain("[CFG-001]");
+        output.Should().Contain("Missing adapter reference");
+        output.Should().Contain("devices/test.yaml");
+        output.Should().Contain("[CFG-W01]");
+        output.Should().Contain("Empty room");
     }
 
     [Fact]
     public void WriteValidationResults_NoIssues_WritesNothing()
     {
-        var stderr = CaptureStderr(() =>
-            OutputFormatter.WriteValidationResults([], []));
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
 
-        stderr.Should().BeEmpty();
+        formatter.WriteValidationResults([], []);
+
+        console.Output.Should().BeEmpty();
     }
 
-    private static string CaptureStdout(Action action)
+    [Fact]
+    public void WriteSuccess_WritesGreenMessage()
     {
-        var original = Console.Out;
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        try
-        {
-            action();
-            return writer.ToString();
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+
+        formatter.WriteSuccess("Done!");
+
+        console.Output.Should().Contain("Done!");
     }
 
-    private static string CaptureStderr(Action action)
+    [Fact]
+    public void WriteError_WritesErrorMessage()
     {
-        var original = Console.Error;
-        using var writer = new StringWriter();
-        Console.SetError(writer);
-        try
-        {
-            action();
-            return writer.ToString();
-        }
-        finally
-        {
-            Console.SetError(original);
-        }
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+
+        formatter.WriteError("Something failed");
+
+        console.Output.Should().Contain("Error: Something failed");
+    }
+
+    [Fact]
+    public void WriteWarning_WritesWarningMessage()
+    {
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+
+        formatter.WriteWarning("Be careful");
+
+        console.Output.Should().Contain("Warning: Be careful");
     }
 
     private class TestItem

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>SmartHal.CLI</RootNamespace>
+    <AssemblyName>shal</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

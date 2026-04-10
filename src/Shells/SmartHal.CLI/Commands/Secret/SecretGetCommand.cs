@@ -1,19 +1,11 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 using SmartHal.Core.Secrets;
+using Spectre.Console;
 
 namespace SmartHal.CLI.Commands.Secret;
-
-/// <summary>Options for the secret get command.</summary>
-public class SecretGetOptions
-{
-    /// <summary>The secret key to retrieve.</summary>
-    [OptionValue(0, HelpText = "The secret key")]
-    public string Key { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Retrieves and displays a secret value.
@@ -23,7 +15,8 @@ public class SecretGetOptions
 public class SecretGetCommand(
     CliContext cliContext,
     IConfigRepository configRepository,
-    SecretsProviderFactory secretsFactory) : ICliCommand<SecretGetOptions>
+    SecretsProviderFactory secretsFactory,
+    IAnsiConsole console) : ICliCommand<SecretGetOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(SecretGetOptions options)
@@ -34,7 +27,7 @@ public class SecretGetCommand(
         var value = await provider.GetSecretAsync(options.Key).ConfigureAwait(false);
 
         // Value goes to stdout for piping
-        Console.WriteLine(value);
+        console.WriteLine(value);
         return CommandResult.Success;
     }
 }

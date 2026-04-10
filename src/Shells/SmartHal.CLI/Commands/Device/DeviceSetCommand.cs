@@ -1,5 +1,4 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
@@ -8,22 +7,6 @@ using SmartHal.Core.Devices;
 
 namespace SmartHal.CLI.Commands.Device;
 
-/// <summary>Options for the device set command.</summary>
-public class DeviceSetOptions
-{
-    /// <summary>The device ID.</summary>
-    [OptionValue(0, HelpText = "The device ID")]
-    public string DeviceId { get; set; } = string.Empty;
-
-    /// <summary>The parameter name to set.</summary>
-    [OptionValue(1, HelpText = "The parameter name")]
-    public string Parameter { get; set; } = string.Empty;
-
-    /// <summary>The value to set.</summary>
-    [OptionValue(2, HelpText = "The value to set")]
-    public string Value { get; set; } = string.Empty;
-}
-
 /// <summary>
 /// Sets a parameter on a device via the adapter and updates the YAML file.
 /// </summary>
@@ -31,7 +14,8 @@ public class DeviceSetOptions
 [CliCommand(["device", "set"], Name = "set", Description = "Set a device parameter")]
 public class DeviceSetCommand(
     IConfigRepository configRepository,
-    IAdapterFactory adapterFactory) : ICliCommand<DeviceSetOptions>
+    IAdapterFactory adapterFactory,
+    OutputFormatter formatter) : ICliCommand<DeviceSetOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceSetOptions options)
@@ -43,7 +27,7 @@ public class DeviceSetCommand(
 
         if (adapter is not IDeviceWriter writer)
         {
-            OutputFormatter.WriteError($"Adapter '{device.AdapterId}' does not support writing parameters.");
+            formatter.WriteError($"Adapter '{device.AdapterId}' does not support writing parameters.");
             return new CommandResult(1);
         }
 
@@ -55,7 +39,7 @@ public class DeviceSetCommand(
         device.Parameters[options.Parameter] = paramValue;
         await configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
 
-        OutputFormatter.WriteSuccess($"Set '{options.Parameter}' = '{options.Value}' on device '{options.DeviceId}'.");
+        formatter.WriteSuccess($"Set '{options.Parameter}' = '{options.Value}' on device '{options.DeviceId}'.");
         return CommandResult.Success;
     }
 }

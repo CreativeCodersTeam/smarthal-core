@@ -9,6 +9,7 @@ using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using SmartHal.Core.Logging;
 using SmartHal.Core.Secrets;
+using Spectre.Console;
 
 // Parse global options before building the host
 var cliContext = new CliContext();
@@ -79,13 +80,13 @@ try
 }
 catch (Exception ex) when (ex is SmartHalException)
 {
-    OutputFormatter.WriteError(ex.Message);
+    AnsiConsole.MarkupLine($"[red]Error: {Markup.Escape(ex.Message)}[/]");
     Log.Debug(ex, "SmartHal error");
     return ExitCodes.FromException(ex);
 }
 catch (Exception ex)
 {
-    OutputFormatter.WriteError(ex.Message);
+    AnsiConsole.MarkupLine($"[red]Error: {Markup.Escape(ex.Message)}[/]");
     Log.Error(ex, "Unexpected error");
     return ExitCodes.GeneralError;
 }

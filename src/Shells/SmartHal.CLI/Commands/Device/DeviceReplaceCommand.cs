@@ -1,23 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Device;
-
-/// <summary>Options for the device replace command.</summary>
-public class DeviceReplaceOptions
-{
-    /// <summary>The device ID to replace.</summary>
-    [OptionValue(0, HelpText = "The device ID to replace")]
-    public string DeviceId { get; set; } = string.Empty;
-
-    /// <summary>The new native ID for the replacement device.</summary>
-    [OptionValue(1, HelpText = "The new native ID")]
-    public string NewNativeId { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Replaces a device's native ID (e.g. after hardware replacement) and applies configuration.
@@ -30,7 +17,8 @@ public class DeviceReplaceCommand(
     IConfigApplier applier,
     IConfigDiffer differ,
     Core.Adapters.IAdapterFactory adapterFactory,
-    IUserInteraction interaction) : ICliCommand<DeviceReplaceOptions>
+    IUserInteraction interaction,
+    OutputFormatter formatter) : ICliCommand<DeviceReplaceOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceReplaceOptions options)
@@ -39,7 +27,7 @@ public class DeviceReplaceCommand(
 
         if (!interaction.Confirm($"Replace device '{options.DeviceId}' native ID '{device.NativeId}' -> '{options.NewNativeId}'?"))
         {
-            OutputFormatter.WriteSuccess("Cancelled.");
+            formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
@@ -69,11 +57,11 @@ public class DeviceReplaceCommand(
             if (diff.HasChanges)
             {
                 await applier.ApplyDiffAsync(diff, adapter, options.NewNativeId).ConfigureAwait(false);
-                OutputFormatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to new device.");
+                formatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to new device.");
             }
         }
 
-        OutputFormatter.WriteSuccess(
+        formatter.WriteSuccess(
             $"Replaced device '{options.DeviceId}': {oldNativeId} -> {options.NewNativeId}.");
 
         return CommandResult.Success;

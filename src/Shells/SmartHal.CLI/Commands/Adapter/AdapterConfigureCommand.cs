@@ -1,19 +1,11 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
+using Spectre.Console;
 
 namespace SmartHal.CLI.Commands.Adapter;
-
-/// <summary>Options for the adapter configure command.</summary>
-public class AdapterConfigureOptions
-{
-    /// <summary>The adapter ID to configure.</summary>
-    [OptionValue(0, HelpText = "The adapter ID to configure")]
-    public string AdapterId { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Interactively configures an adapter instance.
@@ -22,7 +14,9 @@ public class AdapterConfigureOptions
 [CliCommand(["adapter", "configure"], Name = "configure", Description = "Configure an adapter instance")]
 public class AdapterConfigureCommand(
     IConfigRepository configRepository,
-    IUserInteraction interaction) : ICliCommand<AdapterConfigureOptions>
+    IUserInteraction interaction,
+    IAnsiConsole console,
+    OutputFormatter formatter) : ICliCommand<AdapterConfigureOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(AdapterConfigureOptions options)
@@ -35,12 +29,13 @@ public class AdapterConfigureCommand(
         }
         catch
         {
-            OutputFormatter.WriteError($"Adapter '{options.AdapterId}' not found.");
+            formatter.WriteError($"Adapter '{options.AdapterId}' not found.");
             return new CommandResult(1);
         }
 
-        Console.Error.WriteLine($"Configuring adapter '{config.AdapterId}' (type: {config.AdapterType})");
-        Console.Error.WriteLine("Enter settings (empty value to skip):");
+        console.MarkupLine(
+            $"Configuring adapter [bold]'{Markup.Escape(config.AdapterId)}'[/] (type: {Markup.Escape(config.AdapterType)})");
+        console.MarkupLine("[dim]Enter settings (empty value to skip):[/]");
 
         var updated = false;
         foreach (var key in config.Settings.Keys.ToList())
@@ -63,11 +58,11 @@ public class AdapterConfigureCommand(
         if (updated)
         {
             await configRepository.SaveAdapterConfigAsync(config).ConfigureAwait(false);
-            OutputFormatter.WriteSuccess($"Adapter '{options.AdapterId}' configuration updated.");
+            formatter.WriteSuccess($"Adapter '{options.AdapterId}' configuration updated.");
         }
         else
         {
-            OutputFormatter.WriteSuccess("No changes made.");
+            formatter.WriteSuccess("No changes made.");
         }
 
         return CommandResult.Success;

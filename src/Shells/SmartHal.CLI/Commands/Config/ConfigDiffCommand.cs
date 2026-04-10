@@ -1,19 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Config;
-
-/// <summary>Options for the config diff command.</summary>
-public class ConfigDiffOptions
-{
-    /// <summary>The device ID to compare.</summary>
-    [OptionValue(0, HelpText = "The device ID to compare")]
-    public string DeviceId { get; set; } = string.Empty;
-}
 
 /// <summary>
 /// Compares the YAML configuration with the current adapter state for a device.
@@ -36,7 +27,7 @@ public class ConfigDiffCommand(
 
         if (adapter is not IDeviceReader reader)
         {
-            OutputFormatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
+            formatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
             return new CommandResult(1);
         }
 
@@ -45,7 +36,7 @@ public class ConfigDiffCommand(
 
         if (!diff.HasChanges)
         {
-            OutputFormatter.WriteSuccess("No differences found.");
+            formatter.WriteSuccess("No differences found.");
             return CommandResult.Success;
         }
 

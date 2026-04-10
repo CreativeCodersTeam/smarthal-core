@@ -1,19 +1,10 @@
 using CreativeCoders.Cli.Core;
-using CreativeCoders.SysConsole.Cli.Parsing;
 using JetBrains.Annotations;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core;
 using SmartHal.Core.Config;
 
 namespace SmartHal.CLI.Commands.Config;
-
-/// <summary>Options for the config validate command.</summary>
-public class ConfigValidateOptions
-{
-    /// <summary>Run full validation (structure + semantic).</summary>
-    [OptionParameter('f', "full", HelpText = "Run full validation (structure + semantic)")]
-    public bool Full { get; set; }
-}
 
 /// <summary>
 /// Validates the SmartHal configuration.
@@ -23,7 +14,8 @@ public class ConfigValidateOptions
 public class ConfigValidateCommand(
     CliContext cliContext,
     IConfigValidator validator,
-    IConfigRepository configRepository) : ICliCommand<ConfigValidateOptions>
+    IConfigRepository configRepository,
+    OutputFormatter formatter) : ICliCommand<ConfigValidateOptions>
 {
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigValidateOptions options)
@@ -38,11 +30,11 @@ public class ConfigValidateCommand(
 
         if (result.IsValid && result.Warnings.Count == 0)
         {
-            OutputFormatter.WriteSuccess("Configuration is valid.");
+            formatter.WriteSuccess("Configuration is valid.");
             return CommandResult.Success;
         }
 
-        OutputFormatter.WriteValidationResults(
+        formatter.WriteValidationResults(
             result.Errors.Select(e => (e.Code, e.Message, e.FilePath)).ToList(),
             result.Warnings.Select(w => (w.Code, w.Message, w.FilePath)).ToList());
 

@@ -4,6 +4,7 @@ using FakeItEasy;
 using SmartHal.CLI.Commands.Config;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
+using Spectre.Console.Testing;
 
 namespace SmartHal.CLI.Commands;
 
@@ -15,9 +16,11 @@ public class ConfigCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
         var interaction = A.Fake<IUserInteraction>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("env");
 
-        var command = new ConfigInitCommand(cliContext, repo, interaction);
+        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter);
 
         var result = await command.ExecuteAsync(new ConfigInitOptions());
 
@@ -33,9 +36,11 @@ public class ConfigCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
         var interaction = A.Fake<IUserInteraction>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("");
 
-        var command = new ConfigInitCommand(cliContext, repo, interaction);
+        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter);
 
         var result = await command.ExecuteAsync(new ConfigInitOptions());
 
@@ -51,10 +56,12 @@ public class ConfigCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var validator = A.Fake<IConfigValidator>();
         var repo = A.Fake<IConfigRepository>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(new ValidationResult());
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
 
         var result = await command.ExecuteAsync(new ConfigValidateOptions());
 
@@ -67,25 +74,17 @@ public class ConfigCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var validator = A.Fake<IConfigValidator>();
         var repo = A.Fake<IConfigRepository>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         var validationResult = new ValidationResult();
         validationResult.Errors.Add(new ValidationError { Code = "CFG-001", Message = "Bad config" });
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(validationResult);
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
 
-        // Capture stderr to prevent test output pollution
-        var original = Console.Error;
-        Console.SetError(new StringWriter());
-        try
-        {
-            var result = await command.ExecuteAsync(new ConfigValidateOptions());
-            result.ExitCode.Should().Be(Core.ExitCodes.ConfigValidationError);
-        }
-        finally
-        {
-            Console.SetError(original);
-        }
+        var result = await command.ExecuteAsync(new ConfigValidateOptions());
+        result.ExitCode.Should().Be(Core.ExitCodes.ConfigValidationError);
     }
 
     [Fact]
@@ -94,12 +93,14 @@ public class ConfigCommandTests
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var validator = A.Fake<IConfigValidator>();
         var repo = A.Fake<IConfigRepository>();
+        var console = new TestConsole();
+        var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(new ValidationResult());
         A.CallTo(() => validator.ValidateSemanticAsync(repo, A<CancellationToken>._))
             .Returns(new ValidationResult());
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
 
         var result = await command.ExecuteAsync(new ConfigValidateOptions { Full = true });
 
