@@ -1,8 +1,6 @@
 using AwesomeAssertions;
 using FakeItEasy;
-using SmartHal.Core;
 using SmartHal.Core.Adapters;
-using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
@@ -10,8 +8,8 @@ namespace SmartHal.Core.Config;
 public class ConfigValidatorTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly YamlConfigReader _reader = new();
-    private readonly YamlConfigWriter _writer = new();
+    private readonly YamlConfigReader _reader = new YamlConfigReader();
+    private readonly YamlConfigWriter _writer = new YamlConfigWriter();
 
     public ConfigValidatorTests()
     {
@@ -161,7 +159,7 @@ public class ConfigValidatorTests : IDisposable
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "nonexistent", NativeId = "N1", Name = "Test" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "nonexistent", NativeId = "N1", Name = "Test" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device { Id = "dev-001", AdapterId = "nonexistent", NativeId = "N1", Name = "Test" });
@@ -182,14 +180,14 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg", AdapterType = "homematic" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg", AdapterType = "homematic" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig());
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test1" },
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N2", Name = "Test2" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test1" },
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N2", Name = "Test2" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test1" });
@@ -209,13 +207,13 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig());
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test", RoomId = "nonexistent-room" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test", RoomId = "nonexistent-room" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test", RoomId = "nonexistent-room" });
@@ -235,14 +233,14 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig());
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "SAME", Name = "Test1" },
-                new() { Id = "dev-002", AdapterId = "hm-eg", NativeId = "SAME", Name = "Test2" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "SAME", Name = "Test1" },
+                new DeviceSummary { Id = "dev-002", AdapterId = "hm-eg", NativeId = "SAME", Name = "Test2" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device { Id = "dev-001", AdapterId = "hm-eg", NativeId = "SAME", Name = "Test1" });
@@ -264,13 +262,13 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig());
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device
@@ -294,13 +292,13 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig());
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device
@@ -378,7 +376,7 @@ public class ConfigValidatorTests : IDisposable
         // Arrange
         var repo = A.Fake<IConfigRepository>();
         A.CallTo(() => repo.GetAllAdapterConfigsAsync(A<CancellationToken>._))
-            .Returns(new List<AdapterConfig> { new() { AdapterId = "hm-eg" } });
+            .Returns(new List<AdapterConfig> { new AdapterConfig { AdapterId = "hm-eg" } });
         A.CallTo(() => repo.GetRoomsAsync(A<CancellationToken>._))
             .Returns(new RoomsConfig
             {
@@ -388,7 +386,7 @@ public class ConfigValidatorTests : IDisposable
         A.CallTo(() => repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary>
             {
-                new() { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test", RoomId = "room-1" }
+                new DeviceSummary { Id = "dev-001", AdapterId = "hm-eg", NativeId = "N1", Name = "Test", RoomId = "room-1" }
             });
         A.CallTo(() => repo.GetDeviceAsync("dev-001", A<CancellationToken>._))
             .Returns(new Device

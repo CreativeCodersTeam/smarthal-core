@@ -1,12 +1,11 @@
 using AwesomeAssertions;
 using FakeItEasy;
-using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Backup;
 
-public class SnapshotManifestSerializationTests : IDisposable
+public sealed class SnapshotManifestSerializationTests : IDisposable
 {
     private readonly string _root;
     private readonly IConfigRepository _repo;

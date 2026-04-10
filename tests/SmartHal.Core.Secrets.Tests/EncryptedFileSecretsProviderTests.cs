@@ -134,5 +134,5 @@ public class EncryptedFileSecretsProviderTests : IDisposable
     }
 
     private EncryptedFileSecretsProvider CreateProvider(string password) =>
-        new(() => Task.FromResult(password), _testFilePath);
+        new EncryptedFileSecretsProvider(() => Task.FromResult(password), _testFilePath);
 }

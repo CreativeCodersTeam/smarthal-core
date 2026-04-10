@@ -1,13 +1,11 @@
 using AwesomeAssertions;
 using FakeItEasy;
-using SmartHal.Core;
-using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Backup;
 
-public class SnapshotManagerTests : IDisposable
+public sealed class SnapshotManagerTests : IDisposable
 {
     private readonly string _root;
     private readonly IConfigRepository _repo;
@@ -31,7 +29,7 @@ public class SnapshotManagerTests : IDisposable
     }
 
     private static Device CreateDevice(string id = "dev-001", string adapterId = "hm-eg", string nativeId = "ABC123") =>
-        new()
+        new Device
         {
             Id = id,
             AdapterId = adapterId,
@@ -40,8 +38,7 @@ public class SnapshotManagerTests : IDisposable
             RoomId = "room-1"
         };
 
-    private static DeviceSummary ToSummary(Device d) =>
-        new() { Id = d.Id, AdapterId = d.AdapterId, NativeId = d.NativeId, Name = d.Name, RoomId = d.RoomId };
+    private static DeviceSummary ToSummary(Device d) => new DeviceSummary { Id = d.Id, AdapterId = d.AdapterId, NativeId = d.NativeId, Name = d.Name, RoomId = d.RoomId };
 
     // --- CreateSnapshot ---
 

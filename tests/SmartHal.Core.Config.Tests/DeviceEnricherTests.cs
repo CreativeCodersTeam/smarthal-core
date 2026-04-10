@@ -1,14 +1,13 @@
 using AwesomeAssertions;
 using FakeItEasy;
 using SmartHal.Core.Adapters;
-using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
 public class DeviceEnricherTests
 {
-    private readonly DeviceEnricher _sut = new();
+    private readonly DeviceEnricher _sut = new DeviceEnricher();
 
     [Fact]
     public async Task EnrichDeviceAsync_AdapterIsDeviceReader_CallsEnrichDevice()

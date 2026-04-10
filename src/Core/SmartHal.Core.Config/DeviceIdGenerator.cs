@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.RegularExpressions;
 using CreativeCoders.Core;
 
@@ -10,7 +9,8 @@ namespace SmartHal.Core.Config;
 /// </summary>
 public partial class DeviceIdGenerator : IIdGenerator
 {
-    private static readonly Dictionary<string, string> PrefixMap = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> PrefixMap =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["homematic"] = "hm",
         ["zigbee"] = "zb",
@@ -19,7 +19,7 @@ public partial class DeviceIdGenerator : IIdGenerator
         ["evcc"] = "evcc"
     };
 
-    private static readonly Dictionary<string, string> UmlautMap = new()
+    private static readonly Dictionary<string, string> UmlautMap = new Dictionary<string, string>
     {
         ["ä"] = "ae",
         ["ö"] = "oe",

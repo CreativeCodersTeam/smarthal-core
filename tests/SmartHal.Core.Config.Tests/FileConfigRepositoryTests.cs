@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using FakeItEasy;
 using SmartHal.Core.Adapters;
-using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;

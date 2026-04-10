@@ -1,4 +1,3 @@
-using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Logging;
 using AwesomeAssertions;
 

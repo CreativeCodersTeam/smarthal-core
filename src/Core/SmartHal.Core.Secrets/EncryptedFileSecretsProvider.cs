@@ -19,7 +19,7 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
 
     private readonly string _filePath;
     private readonly Func<Task<string>> _passwordCallback;
-    private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
     private byte[]? _derivedKey;
     private byte[]? _salt;

@@ -1,13 +1,11 @@
 using AwesomeAssertions;
-using SmartHal.Core;
-using SmartHal.Core.Config;
 
 namespace SmartHal.Core.Config;
 
 public class YamlConfigReaderTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly YamlConfigReader _sut = new();
+    private readonly YamlConfigReader _sut = new YamlConfigReader();
 
     public YamlConfigReaderTests()
     {

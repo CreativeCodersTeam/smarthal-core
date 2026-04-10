@@ -1,6 +1,5 @@
 using CreativeCoders.Core;
 using SmartHal.Core.Config;
-using SmartHal.Core.Devices;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

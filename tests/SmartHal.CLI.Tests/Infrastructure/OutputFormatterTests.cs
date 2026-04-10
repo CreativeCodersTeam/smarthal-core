@@ -1,4 +1,3 @@
-using SmartHal.CLI.Infrastructure;
 using AwesomeAssertions;
 using Spectre.Console.Testing;
 
@@ -14,8 +13,8 @@ public class OutputFormatterTests
         var formatter = new OutputFormatter(context, console);
         var items = new List<TestItem>
         {
-            new() { Name = "Alpha", Value = 1 },
-            new() { Name = "Beta", Value = 2 }
+            new TestItem { Name = "Alpha", Value = 1 },
+            new TestItem { Name = "Beta", Value = 2 }
         };
 
         formatter.WriteTable(
@@ -37,7 +36,7 @@ public class OutputFormatterTests
         var formatter = new OutputFormatter(context, console);
         var items = new List<TestItem>
         {
-            new() { Name = "Alpha", Value = 1 }
+            new TestItem { Name = "Alpha", Value = 1 }
         };
 
         formatter.WriteTable(
@@ -178,6 +177,92 @@ public class OutputFormatterTests
         formatter.WriteWarning("Be careful");
 
         console.Output.Should().Contain("Warning: Be careful");
+    }
+
+    [Fact]
+    public void WriteTable_TableFormat_NonEmptyList_RendersColumns()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var context = new CliContext { OutputFormat = OutputFormat.Table };
+        var formatter = new OutputFormatter(context, console);
+        var items = new List<TestItem>
+        {
+            new TestItem { Name = "Alpha", Value = 1 },
+            new TestItem { Name = "Beta", Value = 2 }
+        };
+
+        // Act
+        formatter.WriteTable(
+            items,
+            ("Name", i => i.Name),
+            ("Value", i => i.Value.ToString()));
+
+        // Assert
+        var output = console.Output;
+        output.Should().Contain("Alpha");
+        output.Should().Contain("Beta");
+        output.Should().Contain("Name");
+        output.Should().Contain("Value");
+    }
+
+    [Fact]
+    public void WriteValidationResults_ErrorsWithFilePath_IncludesFilePath()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+        var errors = new List<(string Code, string Message, string? FilePath)>
+        {
+            ("E01", "Bad thing", "path/to/file.yaml")
+        };
+
+        // Act
+        formatter.WriteValidationResults(errors, []);
+
+        // Assert
+        console.Output.Should().Contain("path/to/file.yaml");
+    }
+
+    [Fact]
+    public void WriteValidationResults_ErrorsWithoutFilePath_OmitsFileLine()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var context = new CliContext();
+        var formatter = new OutputFormatter(context, console);
+        var errors = new List<(string Code, string Message, string? FilePath)>
+        {
+            ("E01", "Bad thing", null)
+        };
+
+        // Act
+        formatter.WriteValidationResults(errors, []);
+
+        // Assert
+        console.Output.Should().NotContain("File:");
+    }
+
+    [Fact]
+    public void WriteObject_YamlFormat_WritesYaml()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var context = new CliContext { OutputFormat = OutputFormat.Yaml };
+        var formatter = new OutputFormatter(context, console);
+        var item = new TestItem { Name = "Epsilon", Value = 99 };
+
+        // Act
+        formatter.WriteObject(
+            item,
+            ("Name", "Epsilon"),
+            ("Value", "99"));
+
+        // Assert
+        var output = console.Output;
+        output.Should().Contain("Epsilon");
+        output.Should().Contain("99");
     }
 
     private class TestItem

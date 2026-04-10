@@ -1,13 +1,11 @@
 using AwesomeAssertions;
 using FakeItEasy;
-using SmartHal.Core;
-using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Backup;
 
-public class RestoreOrchestratorTests : IDisposable
+public sealed class RestoreOrchestratorTests : IDisposable
 {
     private readonly string _root;
     private readonly IConfigRepository _repo;
@@ -37,7 +35,7 @@ public class RestoreOrchestratorTests : IDisposable
     }
 
     private static Device CreateDevice(string id = "dev-001", string adapterId = "hm-eg", string nativeId = "ABC123") =>
-        new()
+        new Device
         {
             Id = id,
             AdapterId = adapterId,
@@ -45,8 +43,7 @@ public class RestoreOrchestratorTests : IDisposable
             Name = "Test Device"
         };
 
-    private static DeviceSummary ToSummary(Device d) =>
-        new() { Id = d.Id, AdapterId = d.AdapterId, NativeId = d.NativeId, Name = d.Name };
+    private static DeviceSummary ToSummary(Device d) => new DeviceSummary { Id = d.Id, AdapterId = d.AdapterId, NativeId = d.NativeId, Name = d.Name };
 
     private async Task<SnapshotManifest> CreateSnapshotForAsync(Device device)
     {

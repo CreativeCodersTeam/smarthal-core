@@ -1,15 +1,13 @@
 using AwesomeAssertions;
 using FakeItEasy;
-using SmartHal.Core;
 using SmartHal.Core.Adapters;
-using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
 public class ConfigApplierTests
 {
-    private readonly ConfigApplier _sut = new();
+    private readonly ConfigApplier _sut = new ConfigApplier();
 
     [Fact]
     public async Task ApplyDiffAsync_AdapterNotWriter_ThrowsOperationException()

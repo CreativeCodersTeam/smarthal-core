@@ -1,6 +1,4 @@
 using AwesomeAssertions;
-using SmartHal.Core.Config;
-using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 

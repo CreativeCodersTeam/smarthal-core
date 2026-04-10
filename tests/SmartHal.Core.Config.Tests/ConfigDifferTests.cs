@@ -1,12 +1,11 @@
 using AwesomeAssertions;
-using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
 public class ConfigDifferTests
 {
-    private readonly ConfigDiffer _sut = new();
+    private readonly ConfigDiffer _sut = new ConfigDiffer();
 
     // --- Identical Devices ---
 

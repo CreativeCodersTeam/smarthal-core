@@ -12,7 +12,7 @@ namespace SmartHal.CLI.Infrastructure;
 /// </summary>
 public class OutputFormatter(CliContext context, IAnsiConsole console)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
