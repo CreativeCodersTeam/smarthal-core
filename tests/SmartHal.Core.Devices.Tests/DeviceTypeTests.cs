@@ -62,12 +62,44 @@ public class DeviceTypeTests
     }
 
     [Fact]
-    public void CustomType_CanBeCreated()
+    public void Constructor_CustomValue_StoresValue()
     {
         // Act
         var custom = new DeviceType("my_custom_sensor");
 
         // Assert
         custom.Value.Should().Be("my_custom_sensor");
+    }
+
+    [Fact]
+    public void ImplicitConversion_EmptyString_CreatesDeviceType()
+    {
+        // Act
+        DeviceType type = "";
+
+        // Assert
+        type.Value.Should().Be("");
+    }
+
+    [Fact]
+    public void GetHashCode_SameValue_ReturnsSameHash()
+    {
+        // Arrange
+        var a = new DeviceType("blind_actuator");
+        var b = new DeviceType("blind_actuator");
+
+        // Act & Assert
+        a.GetHashCode().Should().Be(b.GetHashCode());
+    }
+
+    [Fact]
+    public void GetHashCode_DifferentValue_ReturnsDifferentHash()
+    {
+        // Arrange
+        var a = new DeviceType("blind_actuator");
+        var b = new DeviceType("switch_actuator");
+
+        // Act & Assert
+        a.GetHashCode().Should().NotBe(b.GetHashCode());
     }
 }

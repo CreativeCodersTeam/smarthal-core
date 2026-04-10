@@ -73,4 +73,30 @@ public class AdapterFactoryTests
         act.Should().Throw<SmartHalAdapterException>()
             .Which.AdapterId.Should().Be("test-001");
     }
+
+    [Fact]
+    public void RegisterAssembly_NullAssembly_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var factory = new AdapterFactory();
+
+        // Act
+        var act = () => factory.RegisterAssembly(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void CreateAdapter_NullConfig_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var factory = new AdapterFactory();
+
+        // Act
+        var act = () => factory.CreateAdapter(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
 }

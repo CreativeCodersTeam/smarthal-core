@@ -52,9 +52,30 @@ public class RelationTypeTests
     }
 
     [Fact]
-    public void ToString_ReturnsValue()
+    public void ToString_Scene_ReturnsSceneString()
     {
         // Act & Assert
         RelationType.Scene.ToString().Should().Be("scene");
+    }
+
+    [Fact]
+    public void ImplicitConversion_EmptyString_CreatesRelationType()
+    {
+        // Act
+        RelationType type = "";
+
+        // Assert
+        type.Value.Should().Be("");
+    }
+
+    [Fact]
+    public void GetHashCode_SameValue_ReturnsSameHash()
+    {
+        // Arrange
+        var a = new RelationType("direct_link");
+        var b = new RelationType("direct_link");
+
+        // Act & Assert
+        a.GetHashCode().Should().Be(b.GetHashCode());
     }
 }

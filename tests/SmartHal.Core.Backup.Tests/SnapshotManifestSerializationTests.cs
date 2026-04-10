@@ -70,4 +70,65 @@ public sealed class SnapshotManifestSerializationTests : IDisposable
         entry.NativeId.Should().Be("ABC123");
         entry.ConfigFilePath.Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public async Task CreateSnapshotAsync_NullDescription_PersistsNullDescription()
+    {
+        // Arrange
+        var device = new Device
+        {
+            Id = "dev-001",
+            AdapterId = "hm-eg",
+            NativeId = "ABC123",
+            Name = "Living Room Light"
+        };
+        A.CallTo(() => _repo.GetDeviceAsync("dev-001", A<CancellationToken>._)).Returns(device);
+
+        var request = new SnapshotRequest
+        {
+            Scope = ConfigScope.Device,
+            ScopeId = "dev-001",
+            Mode = SnapshotMode.Reference,
+            Description = null,
+            Trigger = "manual"
+        };
+
+        // Act
+        var written = await _sut.CreateSnapshotAsync(request);
+        var read = await _sut.GetSnapshotAsync(written.SnapshotId);
+
+        // Assert
+        read.Description.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateSnapshotAsync_SpecialCharactersInDescription_PreservesExactly()
+    {
+        // Arrange
+        var device = new Device
+        {
+            Id = "dev-001",
+            AdapterId = "hm-eg",
+            NativeId = "ABC123",
+            Name = "Living Room Light"
+        };
+        A.CallTo(() => _repo.GetDeviceAsync("dev-001", A<CancellationToken>._)).Returns(device);
+
+        var description = "Über <backup> & \"restore\" — done!";
+        var request = new SnapshotRequest
+        {
+            Scope = ConfigScope.Device,
+            ScopeId = "dev-001",
+            Mode = SnapshotMode.Reference,
+            Description = description,
+            Trigger = "manual"
+        };
+
+        // Act
+        var written = await _sut.CreateSnapshotAsync(request);
+        var read = await _sut.GetSnapshotAsync(written.SnapshotId);
+
+        // Assert
+        read.Description.Should().Be(description);
+    }
 }

@@ -160,6 +160,38 @@ public class EncryptedFileSecretsProviderTests : IDisposable
         (await provider.GetSecretAsync("adapter3.token")).Should().Be("tok3");
     }
 
+    [Fact]
+    public async Task SetSecretAsync_CancelledToken_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var provider = CreateProvider("password");
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act
+        var act = () => provider.SetSecretAsync("key", "value", cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task SetSecretAsync_ConcurrentWrites_AllSucceed()
+    {
+        // Arrange
+        var provider = CreateProvider("password");
+
+        // Act
+        var tasks = Enumerable.Range(1, 5)
+            .Select(i => provider.SetSecretAsync($"key{i}", $"value{i}"))
+            .ToArray();
+        await Task.WhenAll(tasks);
+
+        // Assert
+        var keys = await provider.ListKeysAsync();
+        keys.Should().HaveCount(5);
+    }
+
     private EncryptedFileSecretsProvider CreateProvider(string password) =>
         new EncryptedFileSecretsProvider(() => Task.FromResult(password), _testFilePath);
 }

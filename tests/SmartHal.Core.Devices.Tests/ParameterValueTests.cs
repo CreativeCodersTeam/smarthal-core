@@ -171,4 +171,52 @@ public class ParameterValueTests
         // Act & Assert
         a.Should().NotBe(b);
     }
+
+    [Fact]
+    public void FromNumber_NaN_StoresNaN()
+    {
+        // Act
+        var pv = ParameterValue.FromNumber(double.NaN);
+
+        // Assert
+        pv.NumberValue.Should().Be(double.NaN);
+        pv.Kind.Should().Be(ParameterKind.Number);
+    }
+
+    [Fact]
+    public void FromString_Null_StoresNull()
+    {
+        // Act
+        var pv = ParameterValue.FromString(null!);
+
+        // Assert
+        pv.StringValue.Should().BeNull();
+        pv.Kind.Should().Be(ParameterKind.String);
+    }
+
+    [Fact]
+    public void WithKind_EnumToString_ReturnsUnchanged()
+    {
+        // Arrange
+        var pv = ParameterValue.FromEnum("ON");
+
+        // Act
+        var result = pv.WithKind(ParameterKind.String);
+
+        // Assert
+        result.Kind.Should().Be(ParameterKind.Enum);
+    }
+
+    [Fact]
+    public void WithKind_BoolToNumber_ReturnsUnchanged()
+    {
+        // Arrange
+        var pv = ParameterValue.FromBool(true);
+
+        // Act
+        var result = pv.WithKind(ParameterKind.Number);
+
+        // Assert
+        result.Kind.Should().Be(ParameterKind.Boolean);
+    }
 }

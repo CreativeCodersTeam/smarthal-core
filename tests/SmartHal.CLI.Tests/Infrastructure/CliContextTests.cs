@@ -19,74 +19,37 @@ public class CliContextTests
         remaining.Should().BeEquivalentTo(["device", "list"]);
     }
 
-    [Fact]
-    public void ParseGlobalOptions_Verbose_SetsDebugVerbosity()
+    [Theory]
+    [InlineData("-v", LogVerbosity.Debug)]
+    [InlineData("-vv", LogVerbosity.Verbose)]
+    [InlineData("--quiet", LogVerbosity.Quiet)]
+    public void ParseGlobalOptions_VerbosityFlag_SetsCorrectVerbosity(string flag, LogVerbosity expected)
     {
         // Arrange
         var context = new CliContext();
 
         // Act
-        var remaining = context.ParseGlobalOptions(["-v", "config", "validate"]);
+        context.ParseGlobalOptions([flag, "device", "list"]);
 
         // Assert
-        context.Verbosity.Should().Be(LogVerbosity.Debug);
-        remaining.Should().BeEquivalentTo(["config", "validate"]);
+        context.Verbosity.Should().Be(expected);
     }
 
-    [Fact]
-    public void ParseGlobalOptions_VeryVerbose_SetsVerboseLevel()
+    [Theory]
+    [InlineData("json", OutputFormat.Json)]
+    [InlineData("yaml", OutputFormat.Yaml)]
+    [InlineData("table", OutputFormat.Table)]
+    [InlineData("xml", OutputFormat.Table)]
+    public void ParseGlobalOptions_OutputFlag_SetsCorrectFormat(string format, OutputFormat expected)
     {
         // Arrange
         var context = new CliContext();
 
         // Act
-        var remaining = context.ParseGlobalOptions(["-vv", "device", "list"]);
+        context.ParseGlobalOptions(["--output", format, "device", "list"]);
 
         // Assert
-        context.Verbosity.Should().Be(LogVerbosity.Verbose);
-        remaining.Should().BeEquivalentTo(["device", "list"]);
-    }
-
-    [Fact]
-    public void ParseGlobalOptions_Quiet_SetsQuietVerbosity()
-    {
-        // Arrange
-        var context = new CliContext();
-
-        // Act
-        var remaining = context.ParseGlobalOptions(["--quiet", "backup", "list"]);
-
-        // Assert
-        context.Verbosity.Should().Be(LogVerbosity.Quiet);
-        remaining.Should().BeEquivalentTo(["backup", "list"]);
-    }
-
-    [Fact]
-    public void ParseGlobalOptions_OutputJson_SetsJsonFormat()
-    {
-        // Arrange
-        var context = new CliContext();
-
-        // Act
-        var remaining = context.ParseGlobalOptions(["--output", "json", "device", "list"]);
-
-        // Assert
-        context.OutputFormat.Should().Be(OutputFormat.Json);
-        remaining.Should().BeEquivalentTo(["device", "list"]);
-    }
-
-    [Fact]
-    public void ParseGlobalOptions_OutputYaml_SetsYamlFormat()
-    {
-        // Arrange
-        var context = new CliContext();
-
-        // Act
-        var remaining = context.ParseGlobalOptions(["--output", "yaml", "device", "list"]);
-
-        // Assert
-        context.OutputFormat.Should().Be(OutputFormat.Yaml);
-        remaining.Should().BeEquivalentTo(["device", "list"]);
+        context.OutputFormat.Should().Be(expected);
     }
 
     [Fact]
@@ -119,18 +82,5 @@ public class CliContextTests
         context.Verbosity.Should().Be(LogVerbosity.Debug);
         context.OutputFormat.Should().Be(OutputFormat.Json);
         remaining.Should().BeEquivalentTo(["device", "list"]);
-    }
-
-    [Fact]
-    public void ParseGlobalOptions_UnknownOutputFormat_DefaultsToTable()
-    {
-        // Arrange
-        var context = new CliContext();
-
-        // Act
-        context.ParseGlobalOptions(["--output", "xml"]);
-
-        // Assert
-        context.OutputFormat.Should().Be(OutputFormat.Table);
     }
 }

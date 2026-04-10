@@ -49,4 +49,14 @@ public class LogSetupTests
             }
         }
     }
+
+    [Fact]
+    public void MapVerbosityToLevel_UnknownValue_ReturnsInformation()
+    {
+        // Act
+        var level = LogSetup.MapVerbosityToLevel((LogVerbosity)999);
+
+        // Assert
+        level.Should().Be(LogEventLevel.Information);
+    }
 }

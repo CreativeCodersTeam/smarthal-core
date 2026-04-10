@@ -7,7 +7,7 @@ namespace SmartHal.Core.Adapters;
 public class InterfaceContractTests
 {
     [Fact]
-    public void FakeAdapter_ImplementsISmartHalAdapter()
+    public void FakeAdapter_Implements_ISmartHalAdapter()
     {
         // Act
         var adapter = new FakeAdapter();
@@ -31,7 +31,7 @@ public class InterfaceContractTests
     }
 
     [Fact]
-    public async Task FakeAdapter_TestConnection_ReturnsTrue()
+    public async Task TestConnectionAsync_FakeAdapter_ReturnsTrue()
     {
         // Arrange
         var adapter = new FakeAdapter();
@@ -44,7 +44,7 @@ public class InterfaceContractTests
     }
 
     [Fact]
-    public void FakeAdapter_EnrichDevice_UpgradesStringToEnum()
+    public void EnrichDevice_StringParameterWithEnumSchema_UpgradesToEnum()
     {
         // Arrange
         var adapter = new FakeAdapter();
@@ -61,7 +61,7 @@ public class InterfaceContractTests
     }
 
     [Fact]
-    public async Task FakeAdapter_CanBeDisposed()
+    public async Task DisposeAsync_FakeAdapter_DoesNotThrow()
     {
         // Arrange
         var adapter = new FakeAdapter();
@@ -70,5 +70,54 @@ public class InterfaceContractTests
         await adapter.DisposeAsync();
 
         // No exception means success
+    }
+
+    [Fact]
+    public void EnrichDevice_EmptySchema_LeavesParametersUnchanged()
+    {
+        // Arrange
+        var adapter = new FakeAdapter();
+        var device = new Device();
+        device.Parameters["MODE"] = ParameterValue.FromString("AUTO");
+        var schema = new DeviceParameterSchema();
+
+        // Act
+        adapter.EnrichDevice(device, schema);
+
+        // Assert
+        device.Parameters["MODE"].Kind.Should().Be(ParameterKind.String);
+    }
+
+    [Fact]
+    public void EnrichDevice_SchemaKeyNotInDevice_LeavesDeviceUnchanged()
+    {
+        // Arrange
+        var adapter = new FakeAdapter();
+        var device = new Device();
+        var schema = new DeviceParameterSchema { ["BRIGHTNESS"] = ParameterKind.Number };
+
+        // Act
+        adapter.EnrichDevice(device, schema);
+
+        // Assert
+        device.Parameters.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EnrichDevice_MultipleParameters_OnlyMatchingKeysConverted()
+    {
+        // Arrange
+        var adapter = new FakeAdapter();
+        var device = new Device();
+        device.Parameters["MODE"] = ParameterValue.FromString("AUTO");
+        device.Parameters["LEVEL"] = ParameterValue.FromNumber(50);
+        var schema = new DeviceParameterSchema { ["MODE"] = ParameterKind.Enum };
+
+        // Act
+        adapter.EnrichDevice(device, schema);
+
+        // Assert
+        device.Parameters["MODE"].Kind.Should().Be(ParameterKind.Enum);
+        device.Parameters["LEVEL"].Kind.Should().Be(ParameterKind.Number);
     }
 }
