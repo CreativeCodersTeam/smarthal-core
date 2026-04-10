@@ -7,8 +7,10 @@ public class DeviceTests
     [Fact]
     public void DefaultInitialization_HasEmptyStringsAndLists()
     {
+        // Act
         var device = new Device();
 
+        // Assert
         device.Id.Should().BeEmpty();
         device.AdapterId.Should().BeEmpty();
         device.NativeId.Should().BeEmpty();
@@ -23,6 +25,7 @@ public class DeviceTests
     [Fact]
     public void Properties_CanBeSet()
     {
+        // Act
         var device = new Device
         {
             Id = "dev-001",
@@ -33,6 +36,7 @@ public class DeviceTests
             RoomId = "room-01"
         };
 
+        // Assert
         device.Id.Should().Be("dev-001");
         device.AdapterId.Should().Be("hm-001");
         device.NativeId.Should().Be("HM-1234");
@@ -44,11 +48,14 @@ public class DeviceTests
     [Fact]
     public void Channels_CanBeAdded()
     {
+        // Arrange
         var device = new Device();
         var channel = new Channel { Number = 1, Name = "Switch" };
 
+        // Act
         device.Channels.Add(channel);
 
+        // Assert
         device.Channels.Should().HaveCount(1);
         device.Channels[0].Name.Should().Be("Switch");
     }
@@ -56,6 +63,7 @@ public class DeviceTests
     [Fact]
     public void Relations_CanBeAdded()
     {
+        // Arrange
         var device = new Device();
         var relation = new Relation
         {
@@ -65,8 +73,10 @@ public class DeviceTests
             Symmetric = true
         };
 
+        // Act
         device.Relations.Add(relation);
 
+        // Assert
         device.Relations.Should().HaveCount(1);
         device.Relations[0].Type.Should().Be(RelationType.DirectLink);
         device.Relations[0].Symmetric.Should().BeTrue();
@@ -75,11 +85,14 @@ public class DeviceTests
     [Fact]
     public void Parameters_CanBeSet()
     {
+        // Arrange
         var device = new Device();
 
+        // Act
         device.Parameters["level"] = ParameterValue.FromNumber(75);
         device.Parameters["state"] = ParameterValue.FromBool(true);
 
+        // Assert
         device.Parameters.Should().HaveCount(2);
         device.Parameters["level"].NumberValue.Should().Be(75);
         device.Parameters["state"].BoolValue.Should().BeTrue();
@@ -88,11 +101,14 @@ public class DeviceTests
     [Fact]
     public void GroupIds_CanBeAdded()
     {
+        // Arrange
         var device = new Device();
 
+        // Act
         device.GroupIds.Add("grp-001");
         device.GroupIds.Add("grp-002");
 
+        // Assert
         device.GroupIds.Should().HaveCount(2);
     }
 }

@@ -12,6 +12,7 @@ public class SecretKeyValidatorTests
     [InlineData("my-adapter.setting-name")]
     public void IsValid_ValidKeys_ReturnsTrue(string key)
     {
+        // Act & Assert
         SecretKeyValidator.IsValid(key).Should().BeTrue();
     }
 
@@ -27,12 +28,14 @@ public class SecretKeyValidatorTests
     [InlineData("a")]
     public void IsValid_InvalidKeys_ReturnsFalse(string key)
     {
+        // Act & Assert
         SecretKeyValidator.IsValid(key).Should().BeFalse();
     }
 
     [Fact]
     public void IsValid_Null_ReturnsFalse()
     {
+        // Act & Assert
         SecretKeyValidator.IsValid(null!).Should().BeFalse();
     }
 
@@ -42,6 +45,7 @@ public class SecretKeyValidatorTests
     [InlineData("my-adapter.my-setting", "SMARTHAL_MY_ADAPTER_MY_SETTING")]
     public void ToEnvironmentVariable_ConvertsCorrectly(string key, string expected)
     {
+        // Act & Assert
         SecretKeyValidator.ToEnvironmentVariable(key).Should().Be(expected);
     }
 
@@ -50,12 +54,14 @@ public class SecretKeyValidatorTests
     [InlineData("SMARTHAL_ZIGBEE_HOST", "zigbee_host")]
     public void FromEnvironmentVariable_WithPrefix_ReturnsKey(string envVar, string expected)
     {
+        // Act & Assert
         SecretKeyValidator.FromEnvironmentVariable(envVar).Should().Be(expected);
     }
 
     [Fact]
     public void FromEnvironmentVariable_WithoutPrefix_ReturnsNull()
     {
+        // Act & Assert
         SecretKeyValidator.FromEnvironmentVariable("OTHER_VAR").Should().BeNull();
     }
 }

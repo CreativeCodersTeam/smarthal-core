@@ -8,6 +8,7 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_JsonFormat_WritesValidJson()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Json };
         var formatter = new OutputFormatter(context, console);
@@ -17,11 +18,13 @@ public class OutputFormatterTests
             new TestItem { Name = "Beta", Value = 2 }
         };
 
+        // Act
         formatter.WriteTable(
             items,
             ("Name", i => i.Name),
             ("Value", i => i.Value.ToString()));
 
+        // Assert
         var output = console.Output;
         output.Should().Contain("\"name\"");
         output.Should().Contain("\"Alpha\"");
@@ -31,6 +34,7 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_YamlFormat_WritesYaml()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Yaml };
         var formatter = new OutputFormatter(context, console);
@@ -39,11 +43,13 @@ public class OutputFormatterTests
             new TestItem { Name = "Alpha", Value = 1 }
         };
 
+        // Act
         formatter.WriteTable(
             items,
             ("Name", i => i.Name),
             ("Value", i => i.Value.ToString()));
 
+        // Assert
         var output = console.Output;
         // YamlDotNet serializes list items with "- " prefix and underscore naming
         output.Should().Contain("Alpha");
@@ -53,30 +59,36 @@ public class OutputFormatterTests
     [Fact]
     public void WriteTable_TableFormat_EmptyList_WritesNoItemsMessage()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Table };
         var formatter = new OutputFormatter(context, console);
 
+        // Act
         formatter.WriteTable(
             new List<TestItem>(),
             ("Name", i => i.Name));
 
+        // Assert
         console.Output.Should().Contain("No items found");
     }
 
     [Fact]
     public void WriteObject_JsonFormat_WritesValidJson()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Json };
         var formatter = new OutputFormatter(context, console);
         var item = new TestItem { Name = "Gamma", Value = 42 };
 
+        // Act
         formatter.WriteObject(
             item,
             ("Name", "Gamma"),
             ("Value", "42"));
 
+        // Assert
         var output = console.Output;
         output.Should().Contain("\"name\"");
         output.Should().Contain("\"Gamma\"");
@@ -86,16 +98,19 @@ public class OutputFormatterTests
     [Fact]
     public void WriteObject_TableFormat_WritesLabelValuePairs()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext { OutputFormat = OutputFormat.Table };
         var formatter = new OutputFormatter(context, console);
         var item = new TestItem { Name = "Delta", Value = 7 };
 
+        // Act
         formatter.WriteObject(
             item,
             ("Name", "Delta"),
             ("Value", "7"));
 
+        // Assert
         var output = console.Output;
         output.Should().Contain("Name");
         output.Should().Contain("Delta");
@@ -106,6 +121,7 @@ public class OutputFormatterTests
     [Fact]
     public void WriteValidationResults_ErrorsAndWarnings_FormatsCorrectly()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext();
         var formatter = new OutputFormatter(context, console);
@@ -119,8 +135,10 @@ public class OutputFormatterTests
             ("CFG-W01", "Empty room", null)
         };
 
+        // Act
         formatter.WriteValidationResults(errors, warnings);
 
+        // Assert
         var output = console.Output;
         output.Should().Contain("1 error(s)");
         output.Should().Contain("1 warning(s)");
@@ -134,48 +152,60 @@ public class OutputFormatterTests
     [Fact]
     public void WriteValidationResults_NoIssues_WritesNothing()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext();
         var formatter = new OutputFormatter(context, console);
 
+        // Act
         formatter.WriteValidationResults([], []);
 
+        // Assert
         console.Output.Should().BeEmpty();
     }
 
     [Fact]
     public void WriteSuccess_WritesGreenMessage()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext();
         var formatter = new OutputFormatter(context, console);
 
+        // Act
         formatter.WriteSuccess("Done!");
 
+        // Assert
         console.Output.Should().Contain("Done!");
     }
 
     [Fact]
     public void WriteError_WritesErrorMessage()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext();
         var formatter = new OutputFormatter(context, console);
 
+        // Act
         formatter.WriteError("Something failed");
 
+        // Assert
         console.Output.Should().Contain("Error: Something failed");
     }
 
     [Fact]
     public void WriteWarning_WritesWarningMessage()
     {
+        // Arrange
         var console = new TestConsole();
         var context = new CliContext();
         var formatter = new OutputFormatter(context, console);
 
+        // Act
         formatter.WriteWarning("Be careful");
 
+        // Assert
         console.Output.Should().Contain("Warning: Be careful");
     }
 

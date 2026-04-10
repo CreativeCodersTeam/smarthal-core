@@ -7,8 +7,10 @@ public class AdapterConfigTests
     [Fact]
     public void DefaultInitialization_HasEmptyValues()
     {
+        // Act
         var config = new AdapterConfig();
 
+        // Assert
         config.AdapterId.Should().BeEmpty();
         config.AdapterType.Should().BeEmpty();
         config.Settings.Should().BeEmpty();
@@ -17,6 +19,7 @@ public class AdapterConfigTests
     [Fact]
     public void Settings_CanBePopulated()
     {
+        // Act
         var config = new AdapterConfig
         {
             AdapterId = "hm-eg",
@@ -28,6 +31,7 @@ public class AdapterConfigTests
             }
         };
 
+        // Assert
         config.Settings.Should().HaveCount(2);
         config.Settings["host"].Should().Be("192.168.1.100");
     }

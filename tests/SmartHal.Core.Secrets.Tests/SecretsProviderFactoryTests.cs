@@ -7,40 +7,52 @@ public class SecretsProviderFactoryTests
     [Fact]
     public void Create_Env_ReturnsEnvironmentVariableProvider()
     {
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var provider = factory.Create("env");
 
+        // Assert
         provider.Should().BeOfType<EnvironmentVariableSecretsProvider>();
     }
 
     [Fact]
     public void Create_File_ReturnsEncryptedFileProvider()
     {
+        // Arrange
         var factory = new SecretsProviderFactory(() => Task.FromResult("password"));
 
+        // Act
         var provider = factory.Create("file");
 
+        // Assert
         provider.Should().BeOfType<EncryptedFileSecretsProvider>();
     }
 
     [Fact]
     public void Create_File_WithoutPasswordCallback_ThrowsSecretsProviderException()
     {
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var act = () => factory.Create("file");
 
+        // Assert
         act.Should().Throw<SmartHalSecretsProviderException>();
     }
 
     [Fact]
     public void Create_UnknownProvider_ThrowsSecretsProviderException()
     {
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var act = () => factory.Create("unknown");
 
+        // Assert
         act.Should().Throw<SmartHalSecretsProviderException>();
     }
 
@@ -52,10 +64,13 @@ public class SecretsProviderFactoryTests
             return; // Skip on non-macOS
         }
 
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var provider = factory.Create("auto");
 
+        // Assert
         provider.Should().BeOfType<MacOsKeychainProvider>();
     }
 
@@ -67,10 +82,13 @@ public class SecretsProviderFactoryTests
             return; // Skip on Windows
         }
 
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var act = () => factory.Create("windows");
 
+        // Assert
         act.Should().Throw<PlatformNotSupportedException>();
     }
 
@@ -82,10 +100,13 @@ public class SecretsProviderFactoryTests
             return; // Skip on Linux
         }
 
+        // Arrange
         var factory = new SecretsProviderFactory();
 
+        // Act
         var act = () => factory.Create("linux");
 
+        // Assert
         act.Should().Throw<PlatformNotSupportedException>();
     }
 }

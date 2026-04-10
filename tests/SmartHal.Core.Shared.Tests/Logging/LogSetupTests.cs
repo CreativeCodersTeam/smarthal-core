@@ -13,26 +13,32 @@ public class LogSetupTests
     [InlineData(LogVerbosity.Verbose, LogEventLevel.Verbose)]
     public void MapVerbosityToLevel_ReturnsCorrectLevel(LogVerbosity verbosity, LogEventLevel expectedLevel)
     {
+        // Act & Assert
         LogSetup.MapVerbosityToLevel(verbosity).Should().Be(expectedLevel);
     }
 
     [Fact]
     public void Configure_ReturnsNonNullLogger()
     {
+        // Act
         var logger = LogSetup.Configure(LogVerbosity.Normal);
 
+        // Assert
         logger.Should().NotBeNull();
     }
 
     [Fact]
     public void Configure_WithFilePath_ReturnsNonNullLogger()
     {
+        // Arrange
         var tempPath = Path.Combine(Path.GetTempPath(), $"smarthal-test-{Guid.NewGuid()}.log");
 
         try
         {
+            // Act
             var logger = LogSetup.Configure(LogVerbosity.Debug, tempPath);
 
+            // Assert
             logger.Should().NotBeNull();
         }
         finally

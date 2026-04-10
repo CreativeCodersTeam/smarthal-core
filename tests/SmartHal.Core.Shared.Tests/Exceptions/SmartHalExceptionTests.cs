@@ -7,18 +7,23 @@ public class SmartHalExceptionTests
     [Fact]
     public void Constructor_WithMessage_SetsMessage()
     {
+        // Act
         var ex = new SmartHalException("test error");
 
+        // Assert
         ex.Message.Should().Be("test error");
     }
 
     [Fact]
     public void Constructor_WithMessageAndInnerException_SetsBoth()
     {
+        // Arrange
         var inner = new InvalidOperationException("inner");
 
+        // Act
         var ex = new SmartHalException("outer", inner);
 
+        // Assert
         ex.Message.Should().Be("outer");
         ex.InnerException.Should().BeSameAs(inner);
     }
@@ -26,6 +31,7 @@ public class SmartHalExceptionTests
     [Fact]
     public void AllExceptions_DeriveFrom_SmartHalException()
     {
+        // Act & Assert
         typeof(SmartHalConfigException).Should().BeDerivedFrom<SmartHalException>();
         typeof(SmartHalConfigFileException).Should().BeDerivedFrom<SmartHalException>();
         typeof(SmartHalConfigValidationException).Should().BeDerivedFrom<SmartHalException>();
