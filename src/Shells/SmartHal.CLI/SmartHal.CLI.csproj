@@ -16,8 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="SmartHal.CLI.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CreativeCoders.Cli.Hosting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
 </Project>

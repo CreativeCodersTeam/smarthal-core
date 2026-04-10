@@ -21,6 +21,7 @@
     <Project Path="tests/SmartHal.Core.Devices.Tests/SmartHal.Core.Devices.Tests.csproj" />
     <Project Path="tests/SmartHal.Core.Secrets.Tests/SmartHal.Core.Secrets.Tests.csproj" />
     <Project Path="tests/SmartHal.Core.Shared.Tests/SmartHal.Core.Shared.Tests.csproj" />
+    <Project Path="tests/SmartHal.CLI.Tests/SmartHal.CLI.Tests.csproj" />
     <Project Path="tests/SmartHal.Integration.Tests/SmartHal.Integration.Tests.csproj" />
   </Folder>
   <Folder Name="/__global/">
