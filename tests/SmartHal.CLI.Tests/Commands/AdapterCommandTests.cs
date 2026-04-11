@@ -6,6 +6,7 @@ using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 using Spectre.Console.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.CLI.Commands;
 
@@ -28,7 +29,7 @@ public class AdapterCommandTests
                 new AdapterConfig { AdapterId = "hm1", AdapterType = "homematic", Settings = new Dictionary<string, string> { ["host"] = "192.168.1.1" } }
             });
 
-        var command = new AdapterListCommand(adapterFactory, repo, console, formatter);
+        var command = new AdapterListCommand(adapterFactory, repo, console, formatter, NullLogger<AdapterListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync();
@@ -62,7 +63,7 @@ public class AdapterCommandTests
         A.CallTo(() => adapter.TestConnectionAsync(A<CancellationToken>._)).Returns(true);
         A.CallTo(() => adapter.DisplayName).Returns("HomeMatic CCU");
 
-        var command = new AdapterTestCommand(repo, adapterFactory, formatter);
+        var command = new AdapterTestCommand(repo, adapterFactory, formatter, NullLogger<AdapterTestCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterTestOptions { AdapterId = "hm1" });
@@ -93,7 +94,7 @@ public class AdapterCommandTests
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapter);
         A.CallTo(() => adapter.TestConnectionAsync(A<CancellationToken>._)).Returns(false);
 
-        var command = new AdapterTestCommand(repo, adapterFactory, formatter);
+        var command = new AdapterTestCommand(repo, adapterFactory, formatter, NullLogger<AdapterTestCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterTestOptions { AdapterId = "hm1" });
@@ -115,7 +116,7 @@ public class AdapterCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("unknown", A<CancellationToken>._))
             .Throws(new Exception("Not found"));
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "unknown" });
@@ -144,7 +145,7 @@ public class AdapterCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(config);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("192.168.1.2");
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "hm1" });
@@ -175,7 +176,7 @@ public class AdapterCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(config);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("");
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "hm1" });
@@ -206,7 +207,7 @@ public class AdapterCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(config);
         A.CallTo(() => interaction.ReadSecret(A<string>._)).Returns("new_secret");
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "hm1" });
@@ -247,7 +248,7 @@ public class AdapterCommandTests
         A.CallTo(() => interaction.ReadLine(A<string>._))
             .ReturnsLazily(() => responses[callIndex++]);
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "hm1" });
@@ -279,7 +280,7 @@ public class AdapterCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(config);
         A.CallTo(() => interaction.ReadSecret(A<string>._)).Returns("");
 
-        var command = new AdapterConfigureCommand(repo, interaction, console, formatter);
+        var command = new AdapterConfigureCommand(repo, interaction, console, formatter, NullLogger<AdapterConfigureCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new AdapterConfigureOptions { AdapterId = "hm1" });

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -8,7 +9,7 @@ public class SecretsProviderFactoryTests
     public void Create_Env_ReturnsEnvironmentVariableProvider()
     {
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var provider = factory.Create("env");
@@ -21,7 +22,9 @@ public class SecretsProviderFactoryTests
     public void Create_File_ReturnsEncryptedFileProvider()
     {
         // Arrange
-        var factory = new SecretsProviderFactory(() => Task.FromResult("password"));
+        var factory = new SecretsProviderFactory(
+            NullLogger<SecretsProviderFactory>.Instance,
+            () => Task.FromResult("password"));
 
         // Act
         var provider = factory.Create("file");
@@ -34,7 +37,7 @@ public class SecretsProviderFactoryTests
     public void Create_File_WithoutPasswordCallback_ThrowsSecretsProviderException()
     {
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var act = () => factory.Create("file");
@@ -47,7 +50,7 @@ public class SecretsProviderFactoryTests
     public void Create_UnknownProvider_ThrowsSecretsProviderException()
     {
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var act = () => factory.Create("unknown");
@@ -65,7 +68,7 @@ public class SecretsProviderFactoryTests
         }
 
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var provider = factory.Create("auto");
@@ -83,7 +86,7 @@ public class SecretsProviderFactoryTests
         }
 
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var act = () => factory.Create("windows");
@@ -101,7 +104,7 @@ public class SecretsProviderFactoryTests
         }
 
         // Arrange
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
 
         // Act
         var act = () => factory.Create("linux");

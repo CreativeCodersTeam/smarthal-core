@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Devices;
 
@@ -15,6 +16,7 @@ public class FileConfigRepository : IConfigRepository
     private readonly string _configPath;
     private readonly IConfigReader _reader;
     private readonly IConfigWriter _writer;
+    private readonly ILogger<FileConfigRepository> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileConfigRepository"/> class.
@@ -22,11 +24,13 @@ public class FileConfigRepository : IConfigRepository
     /// <param name="configPath">The root configuration directory path.</param>
     /// <param name="reader">The configuration reader.</param>
     /// <param name="writer">The configuration writer.</param>
-    public FileConfigRepository(string configPath, IConfigReader reader, IConfigWriter writer)
+    /// <param name="logger">The logger instance.</param>
+    public FileConfigRepository(string configPath, IConfigReader reader, IConfigWriter writer, ILogger<FileConfigRepository> logger)
     {
         _configPath = Ensure.IsNotNullOrWhitespace(configPath);
         _reader = Ensure.NotNull(reader);
         _writer = Ensure.NotNull(writer);
+        _logger = Ensure.NotNull(logger);
     }
 
     // --- Meta ---
@@ -34,6 +38,8 @@ public class FileConfigRepository : IConfigRepository
     /// <inheritdoc />
     public async Task<MetaConfig> GetMetaAsync(CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading meta config from {ConfigPath}", _configPath);
+
         return await _reader.ReadMetaAsync(_configPath, ct).ConfigureAwait(false);
     }
 
@@ -43,6 +49,8 @@ public class FileConfigRepository : IConfigRepository
         Ensure.NotNull(meta);
 
         await _writer.WriteMetaAsync(_configPath, meta, ct).ConfigureAwait(false);
+
+        _logger.LogInformation("Saved meta config");
     }
 
     /// <inheritdoc />
@@ -52,6 +60,8 @@ public class FileConfigRepository : IConfigRepository
 
         await _writer.InitializeDirectoryStructureAsync(_configPath, ct).ConfigureAwait(false);
         await _writer.WriteMetaAsync(_configPath, meta, ct).ConfigureAwait(false);
+
+        _logger.LogInformation("Initialized config directory at {ConfigPath}", _configPath);
     }
 
     // --- Rooms & Groups ---
@@ -59,6 +69,8 @@ public class FileConfigRepository : IConfigRepository
     /// <inheritdoc />
     public async Task<RoomsConfig> GetRoomsAsync(CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading rooms config");
+
         return await _reader.ReadRoomsAsync(_configPath, ct).ConfigureAwait(false);
     }
 
@@ -68,14 +80,16 @@ public class FileConfigRepository : IConfigRepository
         Ensure.NotNull(rooms);
 
         await _writer.WriteRoomsAsync(_configPath, rooms, ct).ConfigureAwait(false);
-    }
 
-    // --- Adapter Configurations ---
+        _logger.LogInformation("Saved rooms config");
+    }
 
     /// <inheritdoc />
     public async Task<AdapterConfig> GetAdapterConfigAsync(string adapterId, CancellationToken ct = default)
     {
         Ensure.IsNotNullOrWhitespace(adapterId);
+
+        _logger.LogDebug("Reading adapter config for {AdapterId}", adapterId);
 
         var filePath = GetAdapterFilePath(adapterId);
 
@@ -87,8 +101,11 @@ public class FileConfigRepository : IConfigRepository
     {
         var adaptersDir = Path.Combine(_configPath, "adapters");
 
+        _logger.LogDebug("Loading all adapter configs from {AdaptersDir}", adaptersDir);
+
         if (!Directory.Exists(adaptersDir))
         {
+            _logger.LogWarning("Adapters directory does not exist at {AdaptersDir}", adaptersDir);
             return [];
         }
 
@@ -111,17 +128,20 @@ public class FileConfigRepository : IConfigRepository
         var filePath = GetAdapterFilePath(config.AdapterId);
 
         await _writer.WriteAdapterConfigAsync(filePath, config, ct).ConfigureAwait(false);
-    }
 
-    // --- Devices ---
+        _logger.LogInformation("Saved adapter config for {AdapterId}", config.AdapterId);
+    }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<DeviceSummary>> ListDevicesAsync(CancellationToken ct = default)
     {
         var devicesDir = Path.Combine(_configPath, "devices");
 
+        _logger.LogDebug("Listing devices from {DevicesDir}", devicesDir);
+
         if (!Directory.Exists(devicesDir))
         {
+            _logger.LogWarning("Devices directory does not exist at {DevicesDir}", devicesDir);
             return [];
         }
 
@@ -141,6 +161,8 @@ public class FileConfigRepository : IConfigRepository
     {
         Ensure.IsNotNullOrWhitespace(deviceId);
 
+        _logger.LogDebug("Reading device {DeviceId}", deviceId);
+
         var filePath = GetDeviceFilePath(deviceId);
 
         return await _reader.ReadDeviceAsync(filePath, ct).ConfigureAwait(false);
@@ -154,6 +176,8 @@ public class FileConfigRepository : IConfigRepository
         var filePath = GetDeviceFilePath(device.Id);
 
         await _writer.WriteDeviceAsync(filePath, device, ct).ConfigureAwait(false);
+
+        _logger.LogInformation("Saved device {DeviceId}", device.Id);
     }
 
     /// <inheritdoc />
@@ -164,14 +188,16 @@ public class FileConfigRepository : IConfigRepository
         var filePath = GetDeviceFilePath(deviceId);
 
         await _writer.DeleteDeviceFileAsync(filePath, ct).ConfigureAwait(false);
-    }
 
-    // --- Filtered Listing ---
+        _logger.LogInformation("Deleted device {DeviceId}", deviceId);
+    }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<DeviceSummary>> ListDevicesAsync(DeviceFilter filter, CancellationToken ct = default)
     {
         Ensure.NotNull(filter);
+
+        _logger.LogDebug("Listing devices with filter");
 
         var allDevices = await ListDevicesAsync(ct).ConfigureAwait(false);
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Devices;
@@ -7,8 +8,8 @@ namespace SmartHal.Core.Config;
 public class YamlConfigWriterTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly YamlConfigWriter _sut = new YamlConfigWriter();
-    private readonly YamlConfigReader _reader = new YamlConfigReader();
+    private readonly YamlConfigWriter _sut = new YamlConfigWriter(NullLogger<YamlConfigWriter>.Instance);
+    private readonly YamlConfigReader _reader = new YamlConfigReader(NullLogger<YamlConfigReader>.Instance);
 
     public YamlConfigWriterTests()
     {

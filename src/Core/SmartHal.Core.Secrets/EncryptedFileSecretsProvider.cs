@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -20,6 +22,7 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     private readonly string _filePath;
     private readonly Func<Task<string>> _passwordCallback;
     private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+    private readonly ILogger<EncryptedFileSecretsProvider> _logger;
 
     private byte[]? _derivedKey;
     private byte[]? _salt;
@@ -32,17 +35,24 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     /// </summary>
     /// <param name="passwordCallback">Callback to retrieve the master password when needed.</param>
     /// <param name="filePath">Path to the encrypted secrets file. Defaults to <c>~/.smarthal/secrets.enc</c>.</param>
-    public EncryptedFileSecretsProvider(Func<Task<string>> passwordCallback, string? filePath = null)
+    /// <param name="logger">Optional logger instance.</param>
+    public EncryptedFileSecretsProvider(
+        Func<Task<string>> passwordCallback,
+        string? filePath = null,
+        ILogger<EncryptedFileSecretsProvider>? logger = null)
     {
         _passwordCallback = passwordCallback;
         _filePath = filePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".smarthal", "secrets.enc");
+        _logger = logger ?? NullLogger<EncryptedFileSecretsProvider>.Instance;
     }
 
     /// <inheritdoc />
     public async Task<string> GetSecretAsync(string key, CancellationToken ct = default)
     {
+        _logger.LogDebug("Getting secret for key {Key}", key);
+
         var secrets = await ReadSecretsAsync(ct).ConfigureAwait(false);
 
         return secrets.TryGetValue(key, out var value)
@@ -53,6 +63,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     /// <inheritdoc />
     public async Task SetSecretAsync(string key, string value, CancellationToken ct = default)
     {
+        _logger.LogDebug("Setting secret for key {Key}", key);
+
         await _lock.WaitAsync(ct).ConfigureAwait(false);
 
         try
@@ -70,6 +82,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     /// <inheritdoc />
     public async Task DeleteSecretAsync(string key, CancellationToken ct = default)
     {
+        _logger.LogDebug("Deleting secret for key {Key}", key);
+
         await _lock.WaitAsync(ct).ConfigureAwait(false);
 
         try
@@ -87,6 +101,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> ListKeysAsync(CancellationToken ct = default)
     {
+        _logger.LogDebug("Listing secret keys");
+
         var secrets = await ReadSecretsAsync(ct).ConfigureAwait(false);
         return secrets.Keys.ToList();
     }
@@ -105,6 +121,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
             return;
         }
 
+        _logger.LogDebug("Deriving encryption key");
+
         var password = await _passwordCallback().ConfigureAwait(false);
 
         if (File.Exists(_filePath))
@@ -114,6 +132,7 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
         }
         else
         {
+            _logger.LogWarning("Secrets file not found at {FilePath}, will create new", _filePath);
             _salt = RandomNumberGenerator.GetBytes(SaltSize);
         }
 
@@ -127,10 +146,13 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
 
     private async Task<Dictionary<string, string>> ReadSecretsAsync(CancellationToken ct)
     {
+        _logger.LogDebug("Reading secrets from encrypted file {FilePath}", _filePath);
+
         await EnsureKeyDerivedAsync(ct).ConfigureAwait(false);
 
         if (!File.Exists(_filePath))
         {
+            _logger.LogWarning("Secrets file {FilePath} does not exist, returning empty secrets", _filePath);
             return [];
         }
 
@@ -153,6 +175,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
         }
         catch (CryptographicException ex)
         {
+            _logger.LogError(ex, "Failed to decrypt secrets file {FilePath}", _filePath);
+
             throw new SmartHalSecretsProviderException(
                 "Failed to decrypt secrets file. Wrong password?", ProviderName, ex);
         }
@@ -166,6 +190,8 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
 
     private async Task WriteSecretsAsync(Dictionary<string, string> secrets, CancellationToken ct)
     {
+        _logger.LogDebug("Writing {Count} secret(s) to encrypted file {FilePath}", secrets.Count, _filePath);
+
         await EnsureKeyDerivedAsync(ct).ConfigureAwait(false);
 
         var document = new SecretsDocument { Version = FileVersion, Secrets = secrets };

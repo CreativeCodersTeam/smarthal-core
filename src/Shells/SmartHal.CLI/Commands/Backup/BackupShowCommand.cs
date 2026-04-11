@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using Spectre.Console;
@@ -14,11 +15,16 @@ namespace SmartHal.CLI.Commands.Backup;
 public class BackupShowCommand(
     ISnapshotManager snapshotManager,
     IAnsiConsole console,
-    OutputFormatter formatter) : ICliCommand<BackupShowOptions>
+    OutputFormatter formatter,
+    ILogger<BackupShowCommand> logger) : ICliCommand<BackupShowOptions>
 {
+    private readonly ILogger<BackupShowCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupShowOptions options)
     {
+        _logger.LogInformation("Showing snapshot {SnapshotId}", options.SnapshotId);
+
         var manifest = await snapshotManager.GetSnapshotAsync(options.SnapshotId).ConfigureAwait(false);
 
         formatter.WriteObject(

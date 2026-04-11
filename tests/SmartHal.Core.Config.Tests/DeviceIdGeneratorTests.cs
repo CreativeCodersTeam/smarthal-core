@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 
 namespace SmartHal.Core.Config;
@@ -150,7 +151,7 @@ public class DeviceIdGeneratorTests : IDisposable
     public async Task GenerateDeviceIdAsync_SimpleCase_ReturnsCorrectFormat()
     {
         // Arrange
-        var generator = new DeviceIdGenerator(_tempDir);
+        var generator = new DeviceIdGenerator(_tempDir, NullLogger<DeviceIdGenerator>.Instance);
 
         // Act
         var id = await generator.GenerateDeviceIdAsync("homematic", "Licht Wohnzimmer");
@@ -167,7 +168,7 @@ public class DeviceIdGeneratorTests : IDisposable
         Directory.CreateDirectory(devicesDir);
         await File.WriteAllTextAsync(Path.Combine(devicesDir, "smhal-hm-licht-wohnzimmer.yaml"), "id: smhal-hm-licht-wohnzimmer");
 
-        var generator = new DeviceIdGenerator(_tempDir);
+        var generator = new DeviceIdGenerator(_tempDir, NullLogger<DeviceIdGenerator>.Instance);
 
         // Act
         var id = await generator.GenerateDeviceIdAsync("homematic", "Licht Wohnzimmer");
@@ -186,7 +187,7 @@ public class DeviceIdGeneratorTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(devicesDir, "smhal-hm-licht-wohnzimmer-2.yaml"), "");
         await File.WriteAllTextAsync(Path.Combine(devicesDir, "smhal-hm-licht-wohnzimmer-3.yaml"), "");
 
-        var generator = new DeviceIdGenerator(_tempDir);
+        var generator = new DeviceIdGenerator(_tempDir, NullLogger<DeviceIdGenerator>.Instance);
 
         // Act
         var id = await generator.GenerateDeviceIdAsync("homematic", "Licht Wohnzimmer");
@@ -199,7 +200,7 @@ public class DeviceIdGeneratorTests : IDisposable
     public async Task GenerateDeviceIdAsync_NoDevicesDir_ReturnsBaseId()
     {
         // Arrange — no devices/ directory exists
-        var generator = new DeviceIdGenerator(_tempDir);
+        var generator = new DeviceIdGenerator(_tempDir, NullLogger<DeviceIdGenerator>.Instance);
 
         // Act
         var id = await generator.GenerateDeviceIdAsync("zigbee", "Sensor");
@@ -244,7 +245,7 @@ public class DeviceIdGeneratorTests : IDisposable
     public async Task GenerateDeviceIdAsync_WithUmlauts_ProducesCleanId()
     {
         // Arrange
-        var generator = new DeviceIdGenerator(_tempDir);
+        var generator = new DeviceIdGenerator(_tempDir, NullLogger<DeviceIdGenerator>.Instance);
 
         // Act
         var id = await generator.GenerateDeviceIdAsync("homematic", "Rolladen Küche");

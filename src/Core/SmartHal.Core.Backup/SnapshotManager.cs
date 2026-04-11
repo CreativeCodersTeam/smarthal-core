@@ -1,4 +1,5 @@
 using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
 using SmartHal.Core.Config;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -15,6 +16,7 @@ public class SnapshotManager : ISnapshotManager
     private readonly string _snapshotsRoot;
     private readonly IConfigRepository _configRepository;
     private readonly IAdapterLookup? _adapterLookup;
+    private readonly ILogger<SnapshotManager> _logger;
 
     private readonly ISerializer _serializer = new SerializerBuilder()
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
@@ -33,14 +35,16 @@ public class SnapshotManager : ISnapshotManager
     /// </summary>
     /// <param name="snapshotsRoot">The root directory in which snapshots are stored.</param>
     /// <param name="configRepository">The configuration repository used to resolve scopes and read device data.</param>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="adapterLookup">
     /// An optional adapter lookup. Required for <see cref="SnapshotMode.Embedded"/>;
     /// adapters that do not implement backup capability are silently skipped.
     /// </param>
-    public SnapshotManager(string snapshotsRoot, IConfigRepository configRepository, IAdapterLookup? adapterLookup = null)
+    public SnapshotManager(string snapshotsRoot, IConfigRepository configRepository, ILogger<SnapshotManager> logger, IAdapterLookup? adapterLookup = null)
     {
         _snapshotsRoot = Ensure.IsNotNullOrWhitespace(snapshotsRoot);
         _configRepository = Ensure.NotNull(configRepository);
+        _logger = Ensure.NotNull(logger);
         _adapterLookup = adapterLookup;
     }
 
@@ -49,8 +53,12 @@ public class SnapshotManager : ISnapshotManager
     {
         Ensure.NotNull(request);
 
+        _logger.LogInformation("Creating snapshot for scope {Scope} (scopeId: {ScopeId})", request.Scope, request.ScopeId);
+
         // Resolve which devices belong to the requested scope.
         var devices = await ResolveDevicesAsync(request.Scope, request.ScopeId, ct).ConfigureAwait(false);
+
+        _logger.LogDebug("Resolved {DeviceCount} device(s) for snapshot scope {Scope}", devices.Count, request.Scope);
 
         // Build the snapshot id and directory layout up front so we can fail fast on disk errors.
         var snapshotId = BuildSnapshotId(request.Scope, request.ScopeId);
@@ -72,6 +80,8 @@ public class SnapshotManager : ISnapshotManager
         foreach (var summary in devices)
         {
             ct.ThrowIfCancellationRequested();
+
+            _logger.LogDebug("Snapshotting device {DeviceId}", summary.Id);
 
             var device = await _configRepository.GetDeviceAsync(summary.Id, ct).ConfigureAwait(false);
             var configRelative = SnapshotPaths.GetDeviceConfigRelativePath(device.Id);
@@ -99,6 +109,8 @@ public class SnapshotManager : ISnapshotManager
                     var backupAbsolute = Path.Combine(snapshotDir, backupRelative);
                     await WriteYamlAsync(backupAbsolute, blob, ct).ConfigureAwait(false);
                     entry.AdapterBackupPath = backupRelative;
+
+                    _logger.LogDebug("Captured adapter backup for device {DeviceId}", device.Id);
                 }
             }
 
@@ -109,14 +121,19 @@ public class SnapshotManager : ISnapshotManager
         var manifestPath = SnapshotPaths.GetManifestPath(_snapshotsRoot, snapshotId);
         await WriteYamlAsync(manifestPath, manifest, ct).ConfigureAwait(false);
 
+        _logger.LogInformation("Snapshot {SnapshotId} created with {DeviceCount} device(s)", snapshotId, manifest.Entries.Count);
+
         return manifest;
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<SnapshotManifest>> ListSnapshotsAsync(SnapshotFilter? filter = null, CancellationToken ct = default)
     {
+        _logger.LogDebug("Listing snapshots from {SnapshotsRoot}", _snapshotsRoot);
+
         if (!Directory.Exists(_snapshotsRoot))
         {
+            _logger.LogWarning("Snapshots root directory does not exist at {SnapshotsRoot}", _snapshotsRoot);
             return [];
         }
 
@@ -129,6 +146,7 @@ public class SnapshotManager : ISnapshotManager
             var manifestPath = Path.Combine(dir, SnapshotPaths.ManifestFileName);
             if (!File.Exists(manifestPath))
             {
+                _logger.LogDebug("Skipping directory without manifest: {Directory}", dir);
                 // Skip incomplete snapshots without a manifest.
                 continue;
             }
@@ -141,6 +159,8 @@ public class SnapshotManager : ISnapshotManager
             }
         }
 
+        _logger.LogDebug("Found {Count} snapshot(s) matching filter", results.Count);
+
         // Newest first — most call sites care about recent snapshots.
         return results
             .OrderByDescending(m => m.CreatedAt)
@@ -151,6 +171,8 @@ public class SnapshotManager : ISnapshotManager
     public async Task<SnapshotManifest> GetSnapshotAsync(string snapshotId, CancellationToken ct = default)
     {
         Ensure.IsNotNullOrWhitespace(snapshotId);
+
+        _logger.LogDebug("Reading snapshot {SnapshotId}", snapshotId);
 
         var manifestPath = SnapshotPaths.GetManifestPath(_snapshotsRoot, snapshotId);
         if (!File.Exists(manifestPath))
@@ -166,6 +188,8 @@ public class SnapshotManager : ISnapshotManager
     {
         Ensure.IsNotNullOrWhitespace(snapshotId);
 
+        _logger.LogInformation("Deleting snapshot {SnapshotId}", snapshotId);
+
         var snapshotDir = SnapshotPaths.GetSnapshotDirectory(_snapshotsRoot, snapshotId);
         if (!Directory.Exists(snapshotDir))
         {
@@ -180,6 +204,8 @@ public class SnapshotManager : ISnapshotManager
     public async Task<int> ApplyRetentionPolicyAsync(RetentionPolicy policy, CancellationToken ct = default)
     {
         Ensure.NotNull(policy);
+
+        _logger.LogInformation("Applying retention policy (MaxAge: {MaxAge}, MaxSnapshots: {MaxSnapshots})", policy.MaxAge, policy.MaxSnapshots);
 
         var snapshots = await ListSnapshotsAsync(filter: null, ct).ConfigureAwait(false);
 
@@ -219,6 +245,8 @@ public class SnapshotManager : ISnapshotManager
             await DeleteSnapshotAsync(snapshotId, ct).ConfigureAwait(false);
         }
 
+        _logger.LogInformation("Retention policy deleted {DeletedCount} snapshot(s)", toDelete.Count);
+
         return toDelete.Count;
     }
 
@@ -238,8 +266,8 @@ public class SnapshotManager : ISnapshotManager
                 }
                 // Validate the device exists; this throws when not.
                 var device = await _configRepository.GetDeviceAsync(scopeId, ct).ConfigureAwait(false);
-                return
-                [
+                var singleDeviceResult = new[]
+                {
                     new DeviceSummary
                     {
                         Id = device.Id,
@@ -248,28 +276,36 @@ public class SnapshotManager : ISnapshotManager
                         Name = device.Name,
                         RoomId = device.RoomId
                     }
-                ];
+                };
+                _logger.LogDebug("Resolved scope {Scope} to {DeviceCount} device(s)", scope, singleDeviceResult.Length);
+                return singleDeviceResult;
 
             case ConfigScope.Adapter:
                 if (string.IsNullOrWhiteSpace(scopeId))
                 {
                     throw new SmartHalException("ScopeId is required for ConfigScope.Adapter.");
                 }
-                return await _configRepository
+                var adapterDevices = await _configRepository
                     .ListDevicesAsync(new DeviceFilter { AdapterId = scopeId }, ct)
                     .ConfigureAwait(false);
+                _logger.LogDebug("Resolved scope {Scope} to {DeviceCount} device(s)", scope, adapterDevices.Count);
+                return adapterDevices;
 
             case ConfigScope.Room:
                 if (string.IsNullOrWhiteSpace(scopeId))
                 {
                     throw new SmartHalException("ScopeId is required for ConfigScope.Room.");
                 }
-                return await _configRepository
+                var roomDevices = await _configRepository
                     .ListDevicesAsync(new DeviceFilter { RoomId = scopeId }, ct)
                     .ConfigureAwait(false);
+                _logger.LogDebug("Resolved scope {Scope} to {DeviceCount} device(s)", scope, roomDevices.Count);
+                return roomDevices;
 
             case ConfigScope.All:
-                return await _configRepository.ListDevicesAsync(ct).ConfigureAwait(false);
+                var allDevices = await _configRepository.ListDevicesAsync(ct).ConfigureAwait(false);
+                _logger.LogDebug("Resolved scope {Scope} to {DeviceCount} device(s)", scope, allDevices.Count);
+                return allDevices;
 
             default:
                 throw new SmartHalException($"Unsupported ConfigScope '{scope}'.");

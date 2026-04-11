@@ -7,6 +7,7 @@ using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 using Spectre.Console.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.CLI.Tests.Commands;
 
@@ -23,7 +24,7 @@ public class DeviceCommandTests
         A.CallTo(() => repo.ListDevicesAsync(A<DeviceFilter>._, A<CancellationToken>._))
             .Returns(new List<DeviceSummary>());
 
-        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter);
+        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter, NullLogger<CLI.Commands.Device.DeviceListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -47,7 +48,7 @@ public class DeviceCommandTests
         A.CallTo(() => repo.ListDevicesAsync(A<DeviceFilter>._, A<CancellationToken>._))
             .Returns(new List<DeviceSummary>());
 
-        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter);
+        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter, NullLogger<CLI.Commands.Device.DeviceListCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new CLI.Commands.Device.DeviceListOptions { Type = "" });
@@ -69,7 +70,7 @@ public class DeviceCommandTests
         A.CallTo(() => repo.ListDevicesAsync(A<DeviceFilter>._, A<CancellationToken>._))
             .Returns(new List<DeviceSummary>());
 
-        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter);
+        var command = new CLI.Commands.Device.DeviceListCommand(repo, formatter, NullLogger<CLI.Commands.Device.DeviceListCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new CLI.Commands.Device.DeviceListOptions { Type = "switch_actuator" });
@@ -91,7 +92,7 @@ public class DeviceCommandTests
 
         A.CallTo(() => repo.GetDeviceAsync("smhal-hm-lamp", A<CancellationToken>._)).Returns(device);
 
-        var command = new CLI.Commands.Device.DeviceShowCommand(repo, formatter);
+        var command = new CLI.Commands.Device.DeviceShowCommand(repo, formatter, NullLogger<CLI.Commands.Device.DeviceShowCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -120,7 +121,7 @@ public class DeviceCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(adapterConfig);
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapterMock);
 
-        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory, formatter);
+        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory, formatter, NullLogger<CLI.Commands.Device.DeviceSetCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new CLI.Commands.Device.DeviceSetOptions
@@ -156,7 +157,7 @@ public class DeviceCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(adapterConfig);
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapter);
 
-        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory, formatter);
+        var command = new CLI.Commands.Device.DeviceSetCommand(repo, adapterFactory, formatter, NullLogger<CLI.Commands.Device.DeviceSetCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new CLI.Commands.Device.DeviceSetOptions
@@ -188,7 +189,7 @@ public class DeviceCommandTests
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapter);
 
         var command = new CLI.Commands.Device.DeviceDiscoverCommand(
-            repo, adapterFactory, idGenerator, interaction, formatter);
+            repo, adapterFactory, idGenerator, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceDiscoverCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -218,7 +219,7 @@ public class DeviceCommandTests
             .Returns(new List<Device>());
 
         var command = new CLI.Commands.Device.DeviceDiscoverCommand(
-            repo, adapterFactory, idGenerator, interaction, formatter);
+            repo, adapterFactory, idGenerator, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceDiscoverCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -265,7 +266,7 @@ public class DeviceCommandTests
             .Returns("smhal-hm-new-lamp");
 
         var command = new CLI.Commands.Device.DeviceDiscoverCommand(
-            repo, adapterFactory, idGenerator, interaction, formatter);
+            repo, adapterFactory, idGenerator, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceDiscoverCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -312,7 +313,7 @@ public class DeviceCommandTests
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
         var command = new CLI.Commands.Device.DeviceDiscoverCommand(
-            repo, adapterFactory, idGenerator, interaction, formatter);
+            repo, adapterFactory, idGenerator, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceDiscoverCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new CLI.Commands.Device.DeviceDiscoverOptions { AdapterId = "hm1" });
@@ -353,7 +354,7 @@ public class DeviceCommandTests
         A.CallTo(() => differ.ComputeDiff(A<Device>._, A<Device>._)).Returns(diff);
 
         var command = new CLI.Commands.Device.DeviceReplaceCommand(
-            repo, snapshotManager, applier, differ, adapterFactory, interaction, formatter);
+            repo, snapshotManager, applier, differ, adapterFactory, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceReplaceCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -389,7 +390,7 @@ public class DeviceCommandTests
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
         var command = new CLI.Commands.Device.DeviceReplaceCommand(
-            repo, snapshotManager, applier, differ, adapterFactory, interaction, formatter);
+            repo, snapshotManager, applier, differ, adapterFactory, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceReplaceCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -419,7 +420,7 @@ public class DeviceCommandTests
             .Throws(new KeyNotFoundException("Adapter config 'missing' not found"));
 
         var command = new CLI.Commands.Device.DeviceDiscoverCommand(
-            repo, adapterFactory, idGenerator, interaction, formatter);
+            repo, adapterFactory, idGenerator, interaction, formatter, NullLogger<CLI.Commands.Device.DeviceDiscoverCommand>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(

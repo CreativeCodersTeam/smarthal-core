@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace SmartHal.Core.Secrets;
 
 /// <summary>
@@ -5,9 +8,13 @@ namespace SmartHal.Core.Secrets;
 /// secret key <c>homematic-eg.api_key</c> maps to <c>SMARTHAL_HOMEMATIC_EG_API_KEY</c>.
 /// This provider is read-only — <see cref="SetSecretAsync"/> and <see cref="DeleteSecretAsync"/> throw.
 /// </summary>
-public class EnvironmentVariableSecretsProvider : ISecretsProvider
+public class EnvironmentVariableSecretsProvider(
+    ILogger<EnvironmentVariableSecretsProvider>? logger = null) : ISecretsProvider
 {
     private const string Prefix = "SMARTHAL_";
+
+    private readonly ILogger<EnvironmentVariableSecretsProvider> _logger =
+        logger ?? NullLogger<EnvironmentVariableSecretsProvider>.Instance;
 
     /// <inheritdoc />
     public string ProviderName => "env";
@@ -15,6 +22,8 @@ public class EnvironmentVariableSecretsProvider : ISecretsProvider
     /// <inheritdoc />
     public Task<string> GetSecretAsync(string key, CancellationToken ct = default)
     {
+        _logger.LogDebug("Getting secret {Key} from environment variable", key);
+
         var envVar = SecretKeyValidator.ToEnvironmentVariable(key);
         var value = Environment.GetEnvironmentVariable(envVar);
 
@@ -36,6 +45,8 @@ public class EnvironmentVariableSecretsProvider : ISecretsProvider
     /// <inheritdoc />
     public Task<IReadOnlyList<string>> ListKeysAsync(CancellationToken ct = default)
     {
+        _logger.LogDebug("Listing secret keys from environment variables");
+
         var keys = Environment.GetEnvironmentVariables()
             .Keys
             .Cast<string>()
@@ -44,6 +55,8 @@ public class EnvironmentVariableSecretsProvider : ISecretsProvider
             .Where(k => k is not null)
             .Cast<string>()
             .ToList();
+
+        _logger.LogDebug("Found {Count} secret key(s) in environment variables", keys.Count);
 
         return Task.FromResult<IReadOnlyList<string>>(keys);
     }

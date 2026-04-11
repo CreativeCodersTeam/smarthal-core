@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -15,11 +16,16 @@ namespace SmartHal.CLI.Commands.Device;
 public class DeviceSetCommand(
     IConfigRepository configRepository,
     IAdapterFactory adapterFactory,
-    OutputFormatter formatter) : ICliCommand<DeviceSetOptions>
+    OutputFormatter formatter,
+    ILogger<DeviceSetCommand> logger) : ICliCommand<DeviceSetOptions>
 {
+    private readonly ILogger<DeviceSetCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceSetOptions options)
     {
+        _logger.LogInformation("Setting parameter {ParameterName} on device {DeviceId}", options.Parameter, options.DeviceId);
+
         var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
         var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
 

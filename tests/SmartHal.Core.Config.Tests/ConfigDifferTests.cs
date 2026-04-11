@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 using SmartHal.Core.Devices;
 
@@ -5,7 +6,7 @@ namespace SmartHal.Core.Config;
 
 public class ConfigDifferTests
 {
-    private readonly ConfigDiffer _sut = new ConfigDiffer();
+    private readonly ConfigDiffer _sut = new ConfigDiffer(NullLogger<ConfigDiffer>.Instance);
 
     // --- Identical Devices ---
 

@@ -1,3 +1,5 @@
+using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Devices;
 using YamlDotNet.Serialization;
@@ -8,8 +10,10 @@ namespace SmartHal.Core.Config;
 /// <summary>
 /// Reads SmartHal configuration from YAML files using YamlDotNet.
 /// </summary>
-public class YamlConfigReader : IConfigReader
+public class YamlConfigReader(ILogger<YamlConfigReader> logger) : IConfigReader
 {
+    private readonly ILogger<YamlConfigReader> _logger = Ensure.NotNull(logger);
+
     private readonly IDeserializer _deserializer = new DeserializerBuilder()
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
         .IgnoreUnmatchedProperties()
@@ -18,6 +22,8 @@ public class YamlConfigReader : IConfigReader
     /// <inheritdoc />
     public async Task<MetaConfig> ReadMetaAsync(string configPath, CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading meta config from {ConfigPath}", configPath);
+
         var filePath = Path.Combine(configPath, "meta.yaml");
         var yaml = await ReadFileAsync(filePath, ct).ConfigureAwait(false);
         return DeserializeYaml<MetaConfig>(yaml, filePath);
@@ -26,6 +32,8 @@ public class YamlConfigReader : IConfigReader
     /// <inheritdoc />
     public async Task<RoomsConfig> ReadRoomsAsync(string configPath, CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading rooms config from {ConfigPath}", configPath);
+
         var filePath = Path.Combine(configPath, "rooms.yaml");
         var yaml = await ReadFileAsync(filePath, ct).ConfigureAwait(false);
         return DeserializeYaml<RoomsConfig>(yaml, filePath);
@@ -34,6 +42,8 @@ public class YamlConfigReader : IConfigReader
     /// <inheritdoc />
     public async Task<AdapterConfig> ReadAdapterConfigAsync(string filePath, CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading adapter config from {FilePath}", filePath);
+
         var yaml = await ReadFileAsync(filePath, ct).ConfigureAwait(false);
         return DeserializeYaml<AdapterConfig>(yaml, filePath);
     }
@@ -41,6 +51,8 @@ public class YamlConfigReader : IConfigReader
     /// <inheritdoc />
     public async Task<Device> ReadDeviceAsync(string filePath, CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading device from {FilePath}", filePath);
+
         var yaml = await ReadFileAsync(filePath, ct).ConfigureAwait(false);
         return DeserializeYaml<Device>(yaml, filePath);
     }
@@ -48,6 +60,8 @@ public class YamlConfigReader : IConfigReader
     /// <inheritdoc />
     public async Task<DeviceSummary> ReadDeviceSummaryAsync(string filePath, CancellationToken ct = default)
     {
+        _logger.LogDebug("Reading device summary from {FilePath}", filePath);
+
         var yaml = await ReadFileAsync(filePath, ct).ConfigureAwait(false);
 
         // Parse only the header fields for performance
@@ -56,10 +70,12 @@ public class YamlConfigReader : IConfigReader
         return summary;
     }
 
-    private static async Task<string> ReadFileAsync(string filePath, CancellationToken ct)
+    private async Task<string> ReadFileAsync(string filePath, CancellationToken ct)
     {
         if (!File.Exists(filePath))
         {
+            _logger.LogWarning("Configuration file not found: {FilePath}", filePath);
+
             throw new SmartHalConfigFileException($"Configuration file not found: '{filePath}'.", filePath);
         }
 
@@ -74,6 +90,8 @@ public class YamlConfigReader : IConfigReader
         }
         catch (YamlDotNet.Core.YamlException ex)
         {
+            _logger.LogError("Failed to parse YAML file {FilePath}: {Message}", filePath, ex.Message);
+
             throw new SmartHalConfigFileException(
                 $"Failed to parse YAML file: {ex.Message}",
                 filePath,

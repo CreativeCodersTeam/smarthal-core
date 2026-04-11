@@ -1,10 +1,15 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
+using ILogger = Serilog.ILogger;
 
 namespace SmartHal.Core.Logging;
 
 /// <summary>
-/// Configures Serilog based on CLI verbosity flags.
+/// Configures Serilog based on CLI verbosity flags and provides a bridge
+/// to the <c>Microsoft.Extensions.Logging</c> <see cref="ILoggerFactory"/> abstraction.
 /// Results go to stdout, logs go to stderr.
 /// </summary>
 public static class LogSetup
@@ -39,6 +44,23 @@ public static class LogSetup
         }
 
         return config.CreateLogger();
+    }
+
+    /// <summary>
+    /// Registers <see cref="ILoggerFactory"/> and <see cref="Microsoft.Extensions.Logging.ILogger{T}"/>
+    /// in the DI container, routing all output through the already-configured Serilog pipeline.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSmartHalLogging(this IServiceCollection services)
+    {
+        services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddSerilog(dispose: false);
+        });
+
+        return services;
     }
 
     /// <summary>

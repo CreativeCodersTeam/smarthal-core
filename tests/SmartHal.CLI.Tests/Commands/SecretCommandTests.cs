@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using CreativeCoders.Cli.Core;
 using FakeItEasy;
+using Microsoft.Extensions.Logging.Abstractions;
 using SmartHal.CLI.Commands.Secret;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
@@ -22,7 +23,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var console = new TestConsole();
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
@@ -30,7 +31,7 @@ public class SecretCommandTests
 
         Environment.SetEnvironmentVariable("SMARTHAL_TEST_KEY", "hello_world");
 
-        var command = new SecretGetCommand(cliContext, repo, factory, console);
+        var command = new SecretGetCommand(cliContext, repo, factory, console, NullLogger<SecretGetCommand>.Instance);
 
         try
         {
@@ -53,7 +54,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -61,7 +62,7 @@ public class SecretCommandTests
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
 
-        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter);
+        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter, NullLogger<SecretSetCommand>.Instance);
 
         // Act & Assert — Env provider is read-only, so set should throw
         await Assert.ThrowsAsync<SmartHalSecretsProviderException>(
@@ -77,7 +78,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -86,7 +87,7 @@ public class SecretCommandTests
             .Returns(new MetaConfig { SecretsProvider = "env" });
         A.CallTo(() => interaction.ReadSecret(A<string>._)).Returns("interactive_val");
 
-        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter);
+        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter, NullLogger<SecretSetCommand>.Instance);
 
         // Act & Assert — Env provider is read-only, so set should throw after reading
         await Assert.ThrowsAsync<SmartHalSecretsProviderException>(
@@ -102,13 +103,13 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
-        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction, formatter);
+        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction, formatter, NullLogger<SecretDeleteCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new SecretDeleteOptions { Key = "some_key" });
@@ -127,7 +128,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -135,7 +136,7 @@ public class SecretCommandTests
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
 
-        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction, formatter);
+        var command = new SecretDeleteCommand(cliContext, repo, factory, interaction, formatter, NullLogger<SecretDeleteCommand>.Instance);
 
         // Act & Assert — Env provider is read-only, so delete should throw
         await Assert.ThrowsAsync<SmartHalSecretsProviderException>(
@@ -151,7 +152,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -159,7 +160,7 @@ public class SecretCommandTests
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Throws(new InvalidOperationException("Config not initialized"));
 
-        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter);
+        var command = new SecretSetCommand(cliContext, repo, factory, interaction, formatter, NullLogger<SecretSetCommand>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -172,14 +173,14 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory();
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
         var console = new TestConsole();
         var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json }, console);
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
             .Returns(new MetaConfig { SecretsProvider = "env" });
 
-        var command = new SecretListCommand(cliContext, repo, factory, formatter);
+        var command = new SecretListCommand(cliContext, repo, factory, formatter, NullLogger<SecretListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync();

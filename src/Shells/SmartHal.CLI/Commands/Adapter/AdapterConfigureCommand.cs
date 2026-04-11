@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -16,11 +17,16 @@ public class AdapterConfigureCommand(
     IConfigRepository configRepository,
     IUserInteraction interaction,
     IAnsiConsole console,
-    OutputFormatter formatter) : ICliCommand<AdapterConfigureOptions>
+    OutputFormatter formatter,
+    ILogger<AdapterConfigureCommand> logger) : ICliCommand<AdapterConfigureOptions>
 {
+    private readonly ILogger<AdapterConfigureCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(AdapterConfigureOptions options)
     {
+        _logger.LogInformation("Configuring adapter instance {InstanceId}", options.AdapterId);
+
         AdapterConfig config;
 
         try

@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -17,11 +18,16 @@ public class InstanceAddCommand(
     IAdapterFactory adapterFactory,
     IUserInteraction interaction,
     IAnsiConsole console,
-    OutputFormatter formatter) : ICliCommand<InstanceAddOptions>
+    OutputFormatter formatter,
+    ILogger<InstanceAddCommand> logger) : ICliCommand<InstanceAddOptions>
 {
+    private readonly ILogger<InstanceAddCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(InstanceAddOptions options)
     {
+        _logger.LogInformation("Adding new adapter instance of type {AdapterType}", options.AdapterType);
+
         var availableTypes = adapterFactory.GetAvailableAdapterTypes();
         if (!availableTypes.Contains(options.AdapterType))
         {

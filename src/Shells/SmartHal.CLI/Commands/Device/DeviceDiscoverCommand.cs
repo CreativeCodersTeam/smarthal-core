@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -16,11 +17,16 @@ public class DeviceDiscoverCommand(
     IAdapterFactory adapterFactory,
     IIdGenerator idGenerator,
     IUserInteraction interaction,
-    OutputFormatter formatter) : ICliCommand<DeviceDiscoverOptions>
+    OutputFormatter formatter,
+    ILogger<DeviceDiscoverCommand> logger) : ICliCommand<DeviceDiscoverOptions>
 {
+    private readonly ILogger<DeviceDiscoverCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceDiscoverOptions options)
     {
+        _logger.LogInformation("Discovering devices via adapter {AdapterId}", options.AdapterId);
+
         var adapterConfig = await configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
         await using var adapter = adapterFactory.CreateAdapter(adapterConfig);
 

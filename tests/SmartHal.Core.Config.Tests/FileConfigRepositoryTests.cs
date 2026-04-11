@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 using FakeItEasy;
 using SmartHal.Core.Adapters;
@@ -21,7 +22,7 @@ public class FileConfigRepositoryTests : IDisposable
 
         _reader = A.Fake<IConfigReader>();
         _writer = A.Fake<IConfigWriter>();
-        _sut = new FileConfigRepository(_tempDir, _reader, _writer);
+        _sut = new FileConfigRepository(_tempDir, _reader, _writer, NullLogger<FileConfigRepository>.Instance);
     }
 
     public void Dispose()
@@ -132,7 +133,7 @@ public class FileConfigRepositoryTests : IDisposable
         // Arrange
         var emptyDir = Path.Combine(Path.GetTempPath(), $"smarthal-test-{Guid.NewGuid()}");
         Directory.CreateDirectory(emptyDir);
-        var repo = new FileConfigRepository(emptyDir, _reader, _writer);
+        var repo = new FileConfigRepository(emptyDir, _reader, _writer, NullLogger<FileConfigRepository>.Instance);
 
         try
         {
@@ -233,7 +234,7 @@ public class FileConfigRepositoryTests : IDisposable
         // Arrange
         var emptyDir = Path.Combine(Path.GetTempPath(), $"smarthal-test-{Guid.NewGuid()}");
         Directory.CreateDirectory(emptyDir);
-        var repo = new FileConfigRepository(emptyDir, _reader, _writer);
+        var repo = new FileConfigRepository(emptyDir, _reader, _writer, NullLogger<FileConfigRepository>.Instance);
 
         try
         {

@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using Spectre.Console;
@@ -15,11 +16,16 @@ public class BackupRestoreCommand(
     IRestoreOrchestrator orchestrator,
     IUserInteraction interaction,
     IAnsiConsole console,
-    OutputFormatter formatter) : ICliCommand<BackupRestoreOptions>
+    OutputFormatter formatter,
+    ILogger<BackupRestoreCommand> logger) : ICliCommand<BackupRestoreOptions>
 {
+    private readonly ILogger<BackupRestoreCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupRestoreOptions options)
     {
+        _logger.LogInformation("Restoring snapshot {SnapshotId} (dryRun: {DryRun})", options.SnapshotId, options.DryRun);
+
         var preview = await orchestrator.PreviewRestoreAsync(options.SnapshotId).ConfigureAwait(false);
 
         if (!preview.HasChanges)

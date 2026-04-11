@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 using FakeItEasy;
 using SmartHal.Core.Adapters;
@@ -7,7 +8,7 @@ namespace SmartHal.Core.Config;
 
 public class DeviceEnricherTests
 {
-    private readonly DeviceEnricher _sut = new DeviceEnricher();
+    private readonly DeviceEnricher _sut = new DeviceEnricher(NullLogger<DeviceEnricher>.Instance);
 
     [Fact]
     public async Task EnrichDeviceAsync_AdapterIsDeviceReader_CallsEnrichDevice()

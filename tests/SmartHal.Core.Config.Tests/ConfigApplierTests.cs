@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 using FakeItEasy;
 using SmartHal.Core.Adapters;
@@ -7,7 +8,7 @@ namespace SmartHal.Core.Config;
 
 public class ConfigApplierTests
 {
-    private readonly ConfigApplier _sut = new ConfigApplier();
+    private readonly ConfigApplier _sut = new ConfigApplier(NullLogger<ConfigApplier>.Instance);
 
     [Fact]
     public async Task ApplyDiffAsync_AdapterNotWriter_ThrowsOperationException()

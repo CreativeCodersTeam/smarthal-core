@@ -1,3 +1,5 @@
+using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
 using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
@@ -5,11 +7,15 @@ namespace SmartHal.Core.Config;
 /// <summary>
 /// Compares two device states and produces a diff of changes.
 /// </summary>
-public class ConfigDiffer : IConfigDiffer
+public class ConfigDiffer(ILogger<ConfigDiffer> logger) : IConfigDiffer
 {
+    private readonly ILogger<ConfigDiffer> _logger = Ensure.NotNull(logger);
+
     /// <inheritdoc />
     public DeviceDiff ComputeDiff(Device baseline, Device current)
     {
+        _logger.LogDebug("Computing diff for device {DeviceId}", current.Id);
+
         var diff = new DeviceDiff { DeviceId = current.Id };
 
         // Compare simple properties
@@ -28,6 +34,8 @@ public class ConfigDiffer : IConfigDiffer
 
         // Compare relations
         CompareRelations(diff, baseline.Relations, current.Relations);
+
+        _logger.LogDebug("Diff computed: {ChangeCount} change(s) for device {DeviceId}", diff.Changes.Count, current.Id);
 
         return diff;
     }

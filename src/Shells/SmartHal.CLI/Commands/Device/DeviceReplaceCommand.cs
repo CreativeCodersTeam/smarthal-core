@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
@@ -18,11 +19,16 @@ public class DeviceReplaceCommand(
     IConfigDiffer differ,
     Core.Adapters.IAdapterFactory adapterFactory,
     IUserInteraction interaction,
-    OutputFormatter formatter) : ICliCommand<DeviceReplaceOptions>
+    OutputFormatter formatter,
+    ILogger<DeviceReplaceCommand> logger) : ICliCommand<DeviceReplaceOptions>
 {
+    private readonly ILogger<DeviceReplaceCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceReplaceOptions options)
     {
+        _logger.LogInformation("Replacing device {DeviceId} native ID to {NewNativeId}", options.DeviceId, options.NewNativeId);
+
         var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
 
         if (!interaction.Confirm($"Replace device '{options.DeviceId}' native ID '{device.NativeId}' -> '{options.NewNativeId}'?"))

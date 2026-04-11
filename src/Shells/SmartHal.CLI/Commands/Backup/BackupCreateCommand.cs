@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
@@ -13,12 +14,18 @@ namespace SmartHal.CLI.Commands.Backup;
 [CliCommand(["backup", "create"], Name = "create", Description = "Create a configuration snapshot")]
 public class BackupCreateCommand(
     ISnapshotManager snapshotManager,
-    OutputFormatter formatter) : ICliCommand<BackupCreateOptions>
+    OutputFormatter formatter,
+    ILogger<BackupCreateCommand> logger) : ICliCommand<BackupCreateOptions>
 {
+    private readonly ILogger<BackupCreateCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupCreateOptions options)
     {
         var (scope, scopeId) = ResolveScope(options);
+
+        _logger.LogInformation("Creating snapshot for scope {Scope} (scopeId: {ScopeId})", scope, scopeId);
+
         var mode = options.Mode.Equals("embedded", StringComparison.OrdinalIgnoreCase)
             ? SnapshotMode.Embedded
             : SnapshotMode.Reference;

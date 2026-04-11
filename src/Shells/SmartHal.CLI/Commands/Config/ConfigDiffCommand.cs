@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -15,11 +16,16 @@ public class ConfigDiffCommand(
     IConfigRepository configRepository,
     IConfigDiffer differ,
     IAdapterFactory adapterFactory,
-    OutputFormatter formatter) : ICliCommand<ConfigDiffOptions>
+    OutputFormatter formatter,
+    ILogger<ConfigDiffCommand> logger) : ICliCommand<ConfigDiffOptions>
 {
+    private readonly ILogger<ConfigDiffCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigDiffOptions options)
     {
+        _logger.LogInformation("Computing diff for device {DeviceId}", options.DeviceId);
+
         var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
         var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
 

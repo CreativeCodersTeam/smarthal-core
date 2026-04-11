@@ -1,4 +1,6 @@
 using GitCredentialManager;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -9,6 +11,7 @@ namespace SmartHal.Core.Secrets;
 public class MacOsKeychainProvider : ISecretsProvider
 {
     private readonly ICredentialStore _store;
+    private readonly ILogger<MacOsKeychainProvider> _logger;
 
     /// <inheritdoc />
     public string ProviderName => "macos";
@@ -16,10 +19,15 @@ public class MacOsKeychainProvider : ISecretsProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="MacOsKeychainProvider"/> class.
     /// </summary>
+    /// <param name="logger">Optional logger instance.</param>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
     /// <exception cref="PlatformNotSupportedException">The current platform is not macOS.</exception>
-    public MacOsKeychainProvider(string credentialNamespace = "SmartHal")
+    public MacOsKeychainProvider(
+        ILogger<MacOsKeychainProvider>? logger = null,
+        string credentialNamespace = "SmartHal")
     {
+        _logger = logger ?? NullLogger<MacOsKeychainProvider>.Instance;
+
         if (!OperatingSystem.IsMacOS())
         {
             throw new PlatformNotSupportedException("MacOsKeychainProvider is only supported on macOS.");
@@ -31,6 +39,8 @@ public class MacOsKeychainProvider : ISecretsProvider
     /// <inheritdoc />
     public Task<string> GetSecretAsync(string key, CancellationToken ct = default)
     {
+        _logger.LogDebug("Getting secret {Key} from macOS Keychain", key);
+
         var credential = _store.Get(key, account: null);
 
         return credential is not null
@@ -41,6 +51,8 @@ public class MacOsKeychainProvider : ISecretsProvider
     /// <inheritdoc />
     public Task SetSecretAsync(string key, string value, CancellationToken ct = default)
     {
+        _logger.LogDebug("Setting secret {Key} in macOS Keychain", key);
+
         _store.AddOrUpdate(key, account: key, value);
         return Task.CompletedTask;
     }
@@ -48,6 +60,8 @@ public class MacOsKeychainProvider : ISecretsProvider
     /// <inheritdoc />
     public Task DeleteSecretAsync(string key, CancellationToken ct = default)
     {
+        _logger.LogDebug("Deleting secret {Key} from macOS Keychain", key);
+
         _store.Remove(key, account: key);
         return Task.CompletedTask;
     }

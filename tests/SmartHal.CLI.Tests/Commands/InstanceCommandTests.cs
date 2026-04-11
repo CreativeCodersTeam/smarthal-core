@@ -6,6 +6,7 @@ using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 using Spectre.Console.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.CLI.Commands;
 
@@ -26,7 +27,7 @@ public class InstanceCommandTests
                 new AdapterConfig { AdapterId = "zb1", AdapterType = "zigbee", Settings = new Dictionary<string, string>() }
             });
 
-        var command = new InstanceListCommand(repo, formatter);
+        var command = new InstanceListCommand(repo, formatter, NullLogger<InstanceListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync();
@@ -50,7 +51,7 @@ public class InstanceCommandTests
         A.CallTo(() => adapterFactory.GetAvailableAdapterTypes())
             .Returns(new List<string> { "homematic" });
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -84,7 +85,7 @@ public class InstanceCommandTests
         A.CallTo(() => interaction.ReadLine(A<string>._))
             .ReturnsLazily(() => readLineResponses[readLineCallIndex++]);
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -119,7 +120,7 @@ public class InstanceCommandTests
         // Immediately press enter to finish settings
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("");
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -154,7 +155,7 @@ public class InstanceCommandTests
             .ReturnsLazily(() => readLineCallIndex++ == 0 ? "api_key" : "");
         A.CallTo(() => interaction.ReadSecret(A<string>._)).Returns("s3cret");
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -187,7 +188,7 @@ public class InstanceCommandTests
         // Whitespace-only input should be trimmed to empty and finish the loop
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("   ");
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -222,7 +223,7 @@ public class InstanceCommandTests
         A.CallTo(() => interaction.ReadLine(A<string>._))
             .ReturnsLazily(() => readLineResponses[readLineCallIndex++]);
 
-        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter);
+        var command = new InstanceAddCommand(repo, adapterFactory, interaction, console, formatter, NullLogger<InstanceAddCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceAddOptions
@@ -251,7 +252,7 @@ public class InstanceCommandTests
             .Returns(new AdapterConfig { AdapterId = "hm1", AdapterType = "homematic", Settings = new Dictionary<string, string>() });
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(true);
 
-        var command = new InstanceRemoveCommand(repo, interaction, formatter);
+        var command = new InstanceRemoveCommand(repo, interaction, formatter, NullLogger<InstanceRemoveCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceRemoveOptions { InstanceId = "hm1" });
@@ -274,7 +275,7 @@ public class InstanceCommandTests
             .Returns(new AdapterConfig { AdapterId = "hm1", AdapterType = "homematic", Settings = new Dictionary<string, string>() });
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
-        var command = new InstanceRemoveCommand(repo, interaction, formatter);
+        var command = new InstanceRemoveCommand(repo, interaction, formatter, NullLogger<InstanceRemoveCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new InstanceRemoveOptions { InstanceId = "hm1" });

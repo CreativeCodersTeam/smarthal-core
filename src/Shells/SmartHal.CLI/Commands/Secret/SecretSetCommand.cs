@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 using SmartHal.Core.Secrets;
@@ -16,11 +17,15 @@ public class SecretSetCommand(
     IConfigRepository configRepository,
     SecretsProviderFactory secretsFactory,
     IUserInteraction interaction,
-    OutputFormatter formatter) : ICliCommand<SecretSetOptions>
+    OutputFormatter formatter,
+    ILogger<SecretSetCommand> logger) : ICliCommand<SecretSetOptions>
 {
+    private readonly ILogger<SecretSetCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(SecretSetOptions options)
     {
+        _logger.LogInformation("Setting secret {Key}", options.Key);
         var meta = await configRepository.GetMetaAsync().ConfigureAwait(false);
         var provider = secretsFactory.Create(meta.SecretsProvider, cliContext.ConfigPath);
 

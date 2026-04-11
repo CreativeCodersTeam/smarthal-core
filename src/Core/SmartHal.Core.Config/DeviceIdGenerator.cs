@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
 
 namespace SmartHal.Core.Config;
 
@@ -28,16 +29,19 @@ public partial class DeviceIdGenerator : IIdGenerator
     };
 
     private readonly string _devicesPath;
+    private readonly ILogger<DeviceIdGenerator> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeviceIdGenerator"/> class.
     /// </summary>
     /// <param name="configPath">The root configuration directory path.</param>
-    public DeviceIdGenerator(string configPath)
+    /// <param name="logger">The logger instance.</param>
+    public DeviceIdGenerator(string configPath, ILogger<DeviceIdGenerator> logger)
     {
         Ensure.IsNotNullOrWhitespace(configPath);
 
         _devicesPath = Path.Combine(configPath, "devices");
+        _logger = Ensure.NotNull(logger);
     }
 
     /// <inheritdoc />
@@ -45,6 +49,8 @@ public partial class DeviceIdGenerator : IIdGenerator
     {
         Ensure.IsNotNullOrWhitespace(adapterType);
         Ensure.IsNotNullOrWhitespace(deviceName);
+
+        _logger.LogDebug("Generating device ID for adapter type {AdapterType}, device name {DeviceName}", adapterType, deviceName);
 
         var prefix = GetPrefix(adapterType);
         var slug = GenerateSlug(deviceName);
@@ -59,6 +65,8 @@ public partial class DeviceIdGenerator : IIdGenerator
             id = $"{baseId}-{counter}";
             counter++;
         }
+
+        _logger.LogDebug("Generated device ID {DeviceId}", id);
 
         return Task.FromResult(id);
     }

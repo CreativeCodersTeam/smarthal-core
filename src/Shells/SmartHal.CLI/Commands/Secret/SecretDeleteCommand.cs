@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 using SmartHal.Core.Secrets;
@@ -16,11 +17,15 @@ public class SecretDeleteCommand(
     IConfigRepository configRepository,
     SecretsProviderFactory secretsFactory,
     IUserInteraction interaction,
-    OutputFormatter formatter) : ICliCommand<SecretDeleteOptions>
+    OutputFormatter formatter,
+    ILogger<SecretDeleteCommand> logger) : ICliCommand<SecretDeleteOptions>
 {
+    private readonly ILogger<SecretDeleteCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(SecretDeleteOptions options)
     {
+        _logger.LogInformation("Deleting secret {Key}", options.Key);
         if (!interaction.Confirm($"Delete secret '{options.Key}'?"))
         {
             formatter.WriteSuccess("Cancelled.");

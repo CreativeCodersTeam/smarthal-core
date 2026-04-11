@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using FakeItEasy;
+using Microsoft.Extensions.Logging.Abstractions;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
@@ -17,7 +18,7 @@ public sealed class SnapshotManifestSerializationTests : IDisposable
         Directory.CreateDirectory(_root);
 
         _repo = A.Fake<IConfigRepository>();
-        _sut = new SnapshotManager(_root, _repo);
+        _sut = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance);
     }
 
     public void Dispose()

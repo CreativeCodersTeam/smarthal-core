@@ -24,6 +24,7 @@
     <PackageReference Include="CreativeCoders.Cli.Hosting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 

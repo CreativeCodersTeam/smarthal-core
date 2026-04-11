@@ -1,3 +1,6 @@
+using CreativeCoders.Core;
+using Microsoft.Extensions.Logging;
+
 namespace SmartHal.Core.Config;
 
 /// <summary>
@@ -6,25 +9,32 @@ namespace SmartHal.Core.Config;
 public class ConfigValidator : IConfigValidator
 {
     private readonly IConfigReader _reader;
+    private readonly ILogger<ConfigValidator> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigValidator"/> class.
     /// </summary>
     /// <param name="reader">The configuration reader used for parsing YAML files during validation.</param>
-    public ConfigValidator(IConfigReader reader)
+    /// <param name="logger">The logger instance.</param>
+    public ConfigValidator(IConfigReader reader, ILogger<ConfigValidator> logger)
     {
         _reader = reader;
+        _logger = Ensure.NotNull(logger);
     }
 
     /// <inheritdoc />
     public async Task<ValidationResult> ValidateStructureAsync(string configPath, CancellationToken ct = default)
     {
+        _logger.LogInformation("Starting structure validation for {ConfigPath}", configPath);
+
         var result = new ValidationResult();
 
         // Check meta.yaml exists and is valid
         var metaPath = Path.Combine(configPath, "meta.yaml");
         if (!File.Exists(metaPath))
         {
+            _logger.LogWarning("meta.yaml not found at {MetaPath}", metaPath);
+
             result.Errors.Add(new ValidationError
             {
                 Code = "MISSING_META",
@@ -39,6 +49,8 @@ public class ConfigValidator : IConfigValidator
                 var meta = await _reader.ReadMetaAsync(configPath, ct).ConfigureAwait(false);
                 if (meta.SchemaVersion != "1.0")
                 {
+                    _logger.LogWarning("Unsupported schema version {Version}", meta.SchemaVersion);
+
                     result.Errors.Add(new ValidationError
                     {
                         Code = "UNSUPPORTED_SCHEMA",
@@ -49,6 +61,8 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
+                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_YAML",
@@ -73,17 +87,23 @@ public class ConfigValidator : IConfigValidator
             await ValidateDeviceFilesAsync(devicesDir, result, ct).ConfigureAwait(false);
         }
 
+        _logger.LogInformation("Structure validation completed with {ErrorCount} error(s)", result.Errors.Count);
+
         return result;
     }
 
     /// <inheritdoc />
     public async Task<ValidationResult> ValidateSemanticAsync(IConfigRepository repo, CancellationToken ct = default)
     {
+        _logger.LogInformation("Starting semantic validation");
+
         var result = new ValidationResult();
 
         var adapters = await repo.GetAllAdapterConfigsAsync(ct).ConfigureAwait(false);
         var rooms = await repo.GetRoomsAsync(ct).ConfigureAwait(false);
         var devices = await repo.ListDevicesAsync(ct).ConfigureAwait(false);
+
+        _logger.LogDebug("Validating {DeviceCount} devices against {AdapterCount} adapters", devices.Count, adapters.Count);
 
         var adapterIds = adapters.Select(a => a.AdapterId).ToHashSet();
         var roomIds = rooms.Rooms.Select(r => r.Id).ToHashSet();
@@ -96,6 +116,8 @@ public class ConfigValidator : IConfigValidator
             // Check for duplicate device IDs
             if (!deviceIds.Add(device.Id))
             {
+                _logger.LogWarning("Duplicate device ID {DeviceId}", device.Id);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "DUPLICATE_DEVICE_ID",
@@ -107,6 +129,8 @@ public class ConfigValidator : IConfigValidator
             // Check adapter reference
             if (!adapterIds.Contains(device.AdapterId))
             {
+                _logger.LogWarning("Device {DeviceId} references unknown adapter {AdapterId}", device.Id, device.AdapterId);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_ADAPTER_REF",
@@ -118,6 +142,8 @@ public class ConfigValidator : IConfigValidator
             // Check room reference
             if (device.RoomId is not null && !roomIds.Contains(device.RoomId))
             {
+                _logger.LogWarning("Device {DeviceId} references unknown room {RoomId}", device.Id, device.RoomId);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_ROOM_REF",
@@ -135,6 +161,8 @@ public class ConfigValidator : IConfigValidator
 
             if (!nativeIds.Add(device.NativeId))
             {
+                _logger.LogWarning("Duplicate native ID {NativeId} in adapter {AdapterId}", device.NativeId, device.AdapterId);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "DUPLICATE_NATIVE_ID",
@@ -151,6 +179,8 @@ public class ConfigValidator : IConfigValidator
 
             foreach (var groupId in fullDevice.GroupIds.Where(gid => !groupIds.Contains(gid)))
             {
+                _logger.LogWarning("Device {DeviceId} references unknown group {GroupId}", device.Id, groupId);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_GROUP_REF",
@@ -161,6 +191,8 @@ public class ConfigValidator : IConfigValidator
 
             foreach (var relation in fullDevice.Relations.Where(r => !deviceIds.Contains(r.TargetId)))
             {
+                _logger.LogWarning("Device {DeviceId} has relation targeting unknown device {TargetId}", device.Id, relation.TargetId);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_RELATION_TARGET",
@@ -169,6 +201,8 @@ public class ConfigValidator : IConfigValidator
                 });
             }
         }
+
+        _logger.LogInformation("Semantic validation completed with {ErrorCount} error(s)", result.Errors.Count);
 
         return result;
     }
@@ -183,6 +217,8 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
+                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_YAML",
@@ -224,6 +260,8 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
+                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+
                 result.Errors.Add(new ValidationError
                 {
                     Code = "INVALID_YAML",

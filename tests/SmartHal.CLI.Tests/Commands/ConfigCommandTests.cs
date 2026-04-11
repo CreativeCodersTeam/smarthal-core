@@ -7,6 +7,7 @@ using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 using Spectre.Console.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.CLI.Commands;
 
@@ -23,7 +24,7 @@ public class ConfigCommandTests
         var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("env");
 
-        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter);
+        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter, NullLogger<ConfigInitCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigInitOptions());
@@ -46,7 +47,7 @@ public class ConfigCommandTests
         var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("");
 
-        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter);
+        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter, NullLogger<ConfigInitCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigInitOptions());
@@ -69,7 +70,7 @@ public class ConfigCommandTests
         var formatter = new OutputFormatter(cliContext, console);
         A.CallTo(() => interaction.ReadLine(A<string>._)).Returns("file");
 
-        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter);
+        var command = new ConfigInitCommand(cliContext, repo, interaction, formatter, NullLogger<ConfigInitCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigInitOptions { Path = "/custom/path" });
@@ -93,7 +94,7 @@ public class ConfigCommandTests
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(new ValidationResult());
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter, NullLogger<ConfigValidateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigValidateOptions());
@@ -117,7 +118,7 @@ public class ConfigCommandTests
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(validationResult);
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter, NullLogger<ConfigValidateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigValidateOptions());
@@ -141,7 +142,7 @@ public class ConfigCommandTests
         A.CallTo(() => validator.ValidateSemanticAsync(repo, A<CancellationToken>._))
             .Returns(new ValidationResult());
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter, NullLogger<ConfigValidateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigValidateOptions { Full = true });
@@ -167,7 +168,7 @@ public class ConfigCommandTests
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(structureResult);
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter, NullLogger<ConfigValidateCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new ConfigValidateOptions { Full = true });
@@ -192,7 +193,7 @@ public class ConfigCommandTests
         A.CallTo(() => validator.ValidateStructureAsync(cliContext.ConfigPath, A<CancellationToken>._))
             .Returns(validationResult);
 
-        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter);
+        var command = new ConfigValidateCommand(cliContext, validator, repo, formatter, NullLogger<ConfigValidateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigValidateOptions());
@@ -223,7 +224,7 @@ public class ConfigCommandTests
         A.CallTo(() => readerAdapter.ReadDeviceAsync("native1", A<CancellationToken>._)).Returns(device);
         A.CallTo(() => differ.ComputeDiff(A<Core.Devices.Device>._, A<Core.Devices.Device>._)).Returns(new DeviceDiff());
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigApplyOptions { DeviceId = "dev1" });
@@ -252,7 +253,7 @@ public class ConfigCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(adapterConfig);
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapter);
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigApplyOptions { DeviceId = "dev1" });
@@ -287,7 +288,7 @@ public class ConfigCommandTests
         A.CallTo(() => readerAdapter.ReadDeviceAsync("native1", A<CancellationToken>._)).Returns(device);
         A.CallTo(() => differ.ComputeDiff(A<Core.Devices.Device>._, A<Core.Devices.Device>._)).Returns(diff);
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigApplyOptions { DeviceId = "dev1", DryRun = true });
@@ -324,7 +325,7 @@ public class ConfigCommandTests
         A.CallTo(() => readerAdapter.ReadDeviceAsync("native1", A<CancellationToken>._)).Returns(device);
         A.CallTo(() => differ.ComputeDiff(A<Core.Devices.Device>._, A<Core.Devices.Device>._)).Returns(diff);
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigApplyOptions { DeviceId = "dev1" });
@@ -356,7 +357,7 @@ public class ConfigCommandTests
         A.CallTo(() => readerAdapter.ReadDeviceAsync("native1", A<CancellationToken>._)).Returns(device);
         A.CallTo(() => differ.ComputeDiff(A<Core.Devices.Device>._, A<Core.Devices.Device>._)).Returns(new DeviceDiff());
 
-        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter);
+        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter, NullLogger<ConfigDiffCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigDiffOptions { DeviceId = "dev1" });
@@ -384,7 +385,7 @@ public class ConfigCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._)).Returns(adapterConfig);
         A.CallTo(() => adapterFactory.CreateAdapter(adapterConfig)).Returns(adapter);
 
-        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter);
+        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter, NullLogger<ConfigDiffCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigDiffOptions { DeviceId = "dev1" });
@@ -417,7 +418,7 @@ public class ConfigCommandTests
         A.CallTo(() => readerAdapter.ReadDeviceAsync("native1", A<CancellationToken>._)).Returns(device);
         A.CallTo(() => differ.ComputeDiff(A<Core.Devices.Device>._, A<Core.Devices.Device>._)).Returns(diff);
 
-        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter);
+        var command = new ConfigDiffCommand(repo, differ, adapterFactory, formatter, NullLogger<ConfigDiffCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new ConfigDiffOptions { DeviceId = "dev1" });
@@ -441,7 +442,7 @@ public class ConfigCommandTests
         A.CallTo(() => repo.GetDeviceAsync("missing", A<CancellationToken>._))
             .Throws(new KeyNotFoundException("Device 'missing' not found"));
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(
@@ -464,7 +465,7 @@ public class ConfigCommandTests
         A.CallTo(() => repo.GetAdapterConfigAsync("hm1", A<CancellationToken>._))
             .Throws(new KeyNotFoundException("Adapter config 'hm1' not found"));
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(
@@ -498,7 +499,7 @@ public class ConfigCommandTests
         A.CallTo(() => applier.ApplyDiffAsync(A<DeviceDiff>._, A<ISmartHalAdapter>._, A<string>._, A<CancellationToken>._))
             .Throws(new InvalidOperationException("Adapter communication failed"));
 
-        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter);
+        var command = new ConfigApplyCommand(repo, differ, applier, adapterFactory, formatter, NullLogger<ConfigApplyCommand>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(

@@ -6,6 +6,7 @@ using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Backup;
 using SmartHal.Core.Config;
 using Spectre.Console.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.CLI.Commands;
 
@@ -23,7 +24,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupCreateOptions { DeviceId = "dev1" });
@@ -48,7 +49,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupCreateOptions());
@@ -72,7 +73,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupCreateOptions { AdapterId = "hm1" });
@@ -95,7 +96,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupCreateOptions { RoomId = "living_room" });
@@ -120,7 +121,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new BackupCreateOptions { Mode = modeValue });
@@ -143,7 +144,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.CreateSnapshotAsync(A<SnapshotRequest>._, A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupCreateCommand(snapshotManager, formatter);
+        var command = new BackupCreateCommand(snapshotManager, formatter, NullLogger<BackupCreateCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new BackupCreateOptions { Mode = "reference" });
@@ -165,7 +166,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.ListSnapshotsAsync(A<SnapshotFilter?>._, A<CancellationToken>._))
             .Returns(new List<SnapshotManifest>());
 
-        var command = new BackupListCommand(snapshotManager, formatter);
+        var command = new BackupListCommand(snapshotManager, formatter, NullLogger<BackupListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupListOptions { Scope = "Device" });
@@ -188,7 +189,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.ListSnapshotsAsync(A<SnapshotFilter?>._, A<CancellationToken>._))
             .Returns(new List<SnapshotManifest>());
 
-        var command = new BackupListCommand(snapshotManager, formatter);
+        var command = new BackupListCommand(snapshotManager, formatter, NullLogger<BackupListCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupListOptions { Scope = "invalid_scope" });
@@ -211,7 +212,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.ListSnapshotsAsync(A<SnapshotFilter?>._, A<CancellationToken>._))
             .Returns(new List<SnapshotManifest>());
 
-        var command = new BackupListCommand(snapshotManager, formatter);
+        var command = new BackupListCommand(snapshotManager, formatter, NullLogger<BackupListCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new BackupListOptions { Since = "2026-01-01" });
@@ -232,7 +233,7 @@ public class BackupCommandTests
         var formatter = new OutputFormatter(new CliContext(), console);
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(true);
 
-        var command = new BackupDeleteCommand(snapshotManager, interaction, formatter);
+        var command = new BackupDeleteCommand(snapshotManager, interaction, formatter, NullLogger<BackupDeleteCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupDeleteOptions { SnapshotId = "snap1" });
@@ -253,7 +254,7 @@ public class BackupCommandTests
         var formatter = new OutputFormatter(new CliContext(), console);
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
-        var command = new BackupDeleteCommand(snapshotManager, interaction, formatter);
+        var command = new BackupDeleteCommand(snapshotManager, interaction, formatter, NullLogger<BackupDeleteCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupDeleteOptions { SnapshotId = "snap1" });
@@ -274,7 +275,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.ApplyRetentionPolicyAsync(A<RetentionPolicy>._, A<CancellationToken>._))
             .Returns(3);
 
-        var command = new BackupCleanupCommand(snapshotManager, formatter);
+        var command = new BackupCleanupCommand(snapshotManager, formatter, NullLogger<BackupCleanupCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupCleanupOptions
@@ -303,7 +304,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.ApplyRetentionPolicyAsync(A<RetentionPolicy>._, A<CancellationToken>._))
             .Returns(0);
 
-        var command = new BackupCleanupCommand(snapshotManager, formatter);
+        var command = new BackupCleanupCommand(snapshotManager, formatter, NullLogger<BackupCleanupCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new BackupCleanupOptions { MaxCount = 5 });
@@ -339,7 +340,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.GetSnapshotAsync("snap1", A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupShowCommand(snapshotManager, console, formatter);
+        var command = new BackupShowCommand(snapshotManager, console, formatter, NullLogger<BackupShowCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupShowOptions { SnapshotId = "snap1" });
@@ -369,7 +370,7 @@ public class BackupCommandTests
         A.CallTo(() => snapshotManager.GetSnapshotAsync("snap-empty", A<CancellationToken>._))
             .Returns(manifest);
 
-        var command = new BackupShowCommand(snapshotManager, console, formatter);
+        var command = new BackupShowCommand(snapshotManager, console, formatter, NullLogger<BackupShowCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupShowOptions { SnapshotId = "snap-empty" });
@@ -392,7 +393,7 @@ public class BackupCommandTests
         A.CallTo(() => orchestrator.PreviewRestoreAsync("snap1", A<CancellationToken>._))
             .Returns(new RestorePreviewResult { Devices = [] });
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1" });
@@ -430,7 +431,7 @@ public class BackupCommandTests
         A.CallTo(() => orchestrator.PreviewRestoreAsync("snap1", A<CancellationToken>._))
             .Returns(preview);
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1", DryRun = true });
@@ -473,7 +474,7 @@ public class BackupCommandTests
         A.CallTo(() => orchestrator.RestoreAsync("snap1", A<bool>._, A<CancellationToken>._))
             .Returns(new RestoreResult { DevicesRestored = 1, DevicesSkipped = 0 });
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1" });
@@ -511,7 +512,7 @@ public class BackupCommandTests
         A.CallTo(() => orchestrator.PreviewRestoreAsync("snap1", A<CancellationToken>._)).Returns(preview);
         A.CallTo(() => interaction.Confirm(A<string>._, A<bool>._)).Returns(false);
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1" });
@@ -558,7 +559,7 @@ public class BackupCommandTests
                 Errors = [new RestoreError { DeviceId = "dev1", Message = "Adapter offline" }]
             });
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         var result = await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1" });
@@ -595,7 +596,7 @@ public class BackupCommandTests
 
         A.CallTo(() => orchestrator.PreviewRestoreAsync("snap1", A<CancellationToken>._)).Returns(preview);
 
-        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter);
+        var command = new BackupRestoreCommand(orchestrator, interaction, console, formatter, NullLogger<BackupRestoreCommand>.Instance);
 
         // Act
         await command.ExecuteAsync(new BackupRestoreOptions { SnapshotId = "snap1", DryRun = true });

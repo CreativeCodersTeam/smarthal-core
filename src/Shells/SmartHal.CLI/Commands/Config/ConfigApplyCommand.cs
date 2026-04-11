@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -16,11 +17,16 @@ public class ConfigApplyCommand(
     IConfigDiffer differ,
     IConfigApplier applier,
     IAdapterFactory adapterFactory,
-    OutputFormatter formatter) : ICliCommand<ConfigApplyOptions>
+    OutputFormatter formatter,
+    ILogger<ConfigApplyCommand> logger) : ICliCommand<ConfigApplyOptions>
 {
+    private readonly ILogger<ConfigApplyCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigApplyOptions options)
     {
+        _logger.LogInformation("Applying config for device {DeviceId}", options.DeviceId);
+
         var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
         var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
 

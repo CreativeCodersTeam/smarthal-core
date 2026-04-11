@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -14,11 +15,16 @@ namespace SmartHal.CLI.Commands.Adapter;
 public class AdapterTestCommand(
     IConfigRepository configRepository,
     IAdapterFactory adapterFactory,
-    OutputFormatter formatter) : ICliCommand<AdapterTestOptions>
+    OutputFormatter formatter,
+    ILogger<AdapterTestCommand> logger) : ICliCommand<AdapterTestOptions>
 {
+    private readonly ILogger<AdapterTestCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(AdapterTestOptions options)
     {
+        _logger.LogInformation("Testing adapter connection for instance {InstanceId}", options.AdapterId);
+
         var config = await configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
         await using var adapter = adapterFactory.CreateAdapter(config);
 

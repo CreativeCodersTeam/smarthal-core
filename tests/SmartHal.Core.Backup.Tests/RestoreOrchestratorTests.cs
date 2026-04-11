@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using FakeItEasy;
+using Microsoft.Extensions.Logging.Abstractions;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
@@ -22,8 +23,8 @@ public sealed class RestoreOrchestratorTests : IDisposable
         _repo = A.Fake<IConfigRepository>();
         _reader = A.Fake<IConfigReader>();
         _differ = A.Fake<IConfigDiffer>();
-        _snapshotManager = new SnapshotManager(_root, _repo);
-        _sut = new RestoreOrchestrator(_root, _snapshotManager, _repo, _reader, _differ);
+        _snapshotManager = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance);
+        _sut = new RestoreOrchestrator(_root, _snapshotManager, _repo, _reader, _differ, NullLogger<RestoreOrchestrator>.Instance);
     }
 
     public void Dispose()
@@ -300,7 +301,7 @@ public sealed class RestoreOrchestratorTests : IDisposable
         var lookup = A.Fake<IAdapterLookup>();
         A.CallTo(() => lookup.GetBackupCapability("hm-eg")).Returns(capability);
 
-        var manager = new SnapshotManager(_root, _repo, lookup);
+        var manager = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance, lookup);
         A.CallTo(() => _repo.GetDeviceAsync("dev-001", A<CancellationToken>._)).Returns(device);
 
         var manifest = await manager.CreateSnapshotAsync(new SnapshotRequest
@@ -310,7 +311,7 @@ public sealed class RestoreOrchestratorTests : IDisposable
             Mode = SnapshotMode.Embedded
         });
 
-        var orchestrator = new RestoreOrchestrator(_root, manager, _repo, _reader, _differ, lookup);
+        var orchestrator = new RestoreOrchestrator(_root, manager, _repo, _reader, _differ, NullLogger<RestoreOrchestrator>.Instance, lookup);
 
         A.CallTo(() => _repo.ListDevicesAsync(A<CancellationToken>._))
             .Returns(new List<DeviceSummary> { ToSummary(device) });

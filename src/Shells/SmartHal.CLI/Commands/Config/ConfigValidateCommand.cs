@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core;
 using SmartHal.Core.Config;
@@ -15,11 +16,16 @@ public class ConfigValidateCommand(
     CliContext cliContext,
     IConfigValidator validator,
     IConfigRepository configRepository,
-    OutputFormatter formatter) : ICliCommand<ConfigValidateOptions>
+    OutputFormatter formatter,
+    ILogger<ConfigValidateCommand> logger) : ICliCommand<ConfigValidateOptions>
 {
+    private readonly ILogger<ConfigValidateCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigValidateOptions options)
     {
+        _logger.LogInformation("Validating config at {ConfigPath}", cliContext.ConfigPath);
+
         var result = await validator.ValidateStructureAsync(cliContext.ConfigPath).ConfigureAwait(false);
 
         if (options.Full && result.IsValid)

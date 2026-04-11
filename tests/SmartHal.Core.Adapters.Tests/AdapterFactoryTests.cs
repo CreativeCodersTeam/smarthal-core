@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using SmartHal.Core.Adapters.Fakes;
 
 namespace SmartHal.Core.Adapters;
@@ -9,7 +10,7 @@ public class AdapterFactoryTests
     public void GetAvailableAdapterTypes_WithNoRegistrations_ReturnsEmpty()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
 
         // Act & Assert
         factory.GetAvailableAdapterTypes().Should().BeEmpty();
@@ -19,7 +20,7 @@ public class AdapterFactoryTests
     public void RegisterAssembly_WithAdapterMetadata_RegistersType()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
 
         // Act
         factory.RegisterAssembly(typeof(FakeAdapter).Assembly);
@@ -33,7 +34,7 @@ public class AdapterFactoryTests
     public void CreateAdapter_WithKnownType_ReturnsInstance()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
         factory.RegisterAssembly(typeof(FakeAdapter).Assembly);
         var config = new AdapterConfig { AdapterId = "fake-001", AdapterType = "fake" };
 
@@ -49,7 +50,7 @@ public class AdapterFactoryTests
     public void RegisterAssembly_DuplicateAdapterType_ThrowsSmartHalAdapterException()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
         factory.RegisterAssembly(typeof(FakeAdapter).Assembly);
 
         // Act
@@ -63,7 +64,7 @@ public class AdapterFactoryTests
     public void CreateAdapter_WithUnknownType_ThrowsSmartHalAdapterException()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
         var config = new AdapterConfig { AdapterId = "test-001", AdapterType = "nonexistent" };
 
         // Act
@@ -78,7 +79,7 @@ public class AdapterFactoryTests
     public void RegisterAssembly_NullAssembly_ThrowsArgumentNullException()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
 
         // Act
         var act = () => factory.RegisterAssembly(null!);
@@ -91,7 +92,7 @@ public class AdapterFactoryTests
     public void CreateAdapter_NullConfig_ThrowsArgumentNullException()
     {
         // Arrange
-        var factory = new AdapterFactory();
+        var factory = new AdapterFactory(NullLogger<AdapterFactory>.Instance);
 
         // Act
         var act = () => factory.CreateAdapter(null!);

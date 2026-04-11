@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using AwesomeAssertions;
 
 namespace SmartHal.Core.Config;
@@ -5,7 +6,7 @@ namespace SmartHal.Core.Config;
 public class YamlConfigReaderTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly YamlConfigReader _sut = new YamlConfigReader();
+    private readonly YamlConfigReader _sut = new YamlConfigReader(NullLogger<YamlConfigReader>.Instance);
 
     public YamlConfigReaderTests()
     {

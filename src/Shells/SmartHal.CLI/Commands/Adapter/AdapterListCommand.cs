@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Adapters;
 using SmartHal.Core.Config;
@@ -16,11 +17,16 @@ public class AdapterListCommand(
     IAdapterFactory adapterFactory,
     IConfigRepository configRepository,
     IAnsiConsole console,
-    OutputFormatter formatter) : ICliCommand
+    OutputFormatter formatter,
+    ILogger<AdapterListCommand> logger) : ICliCommand
 {
+    private readonly ILogger<AdapterListCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync()
     {
+        _logger.LogInformation("Listing adapters");
+
         var types = adapterFactory.GetAvailableAdapterTypes();
         console.MarkupLine($"Registered adapter types: [bold]{Markup.Escape(string.Join(", ", types))}[/]");
         console.WriteLine();

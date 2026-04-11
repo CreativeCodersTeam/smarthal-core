@@ -1,5 +1,6 @@
 using CreativeCoders.Cli.Core;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
 using SmartHal.Core.Config;
 
@@ -13,11 +14,16 @@ namespace SmartHal.CLI.Commands.Instance;
 public class InstanceRemoveCommand(
     IConfigRepository configRepository,
     IUserInteraction interaction,
-    OutputFormatter formatter) : ICliCommand<InstanceRemoveOptions>
+    OutputFormatter formatter,
+    ILogger<InstanceRemoveCommand> logger) : ICliCommand<InstanceRemoveOptions>
 {
+    private readonly ILogger<InstanceRemoveCommand> _logger = logger;
+
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(InstanceRemoveOptions options)
     {
+        _logger.LogInformation("Removing adapter instance {InstanceId}", options.InstanceId);
+
         // Verify instance exists
         var config = await configRepository.GetAdapterConfigAsync(options.InstanceId).ConfigureAwait(false);
 

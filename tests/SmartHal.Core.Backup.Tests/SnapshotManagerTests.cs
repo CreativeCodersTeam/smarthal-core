@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using FakeItEasy;
+using Microsoft.Extensions.Logging.Abstractions;
 using SmartHal.Core.Config;
 using SmartHal.Core.Devices;
 
@@ -17,7 +18,7 @@ public sealed class SnapshotManagerTests : IDisposable
         Directory.CreateDirectory(_root);
 
         _repo = A.Fake<IConfigRepository>();
-        _sut = new SnapshotManager(_root, _repo);
+        _sut = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance);
     }
 
     public void Dispose()
@@ -157,7 +158,7 @@ public sealed class SnapshotManagerTests : IDisposable
         var lookup = A.Fake<IAdapterLookup>();
         A.CallTo(() => lookup.GetBackupCapability("hm-eg")).Returns(capability);
 
-        var sut = new SnapshotManager(_root, _repo, lookup);
+        var sut = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance, lookup);
 
         // Act
         var manifest = await sut.CreateSnapshotAsync(new SnapshotRequest
@@ -183,7 +184,7 @@ public sealed class SnapshotManagerTests : IDisposable
         var lookup = A.Fake<IAdapterLookup>();
         A.CallTo(() => lookup.GetBackupCapability("hm-eg")).Returns(null);
 
-        var sut = new SnapshotManager(_root, _repo, lookup);
+        var sut = new SnapshotManager(_root, _repo, NullLogger<SnapshotManager>.Instance, lookup);
 
         // Act
         var manifest = await sut.CreateSnapshotAsync(new SnapshotRequest
@@ -226,7 +227,7 @@ public sealed class SnapshotManagerTests : IDisposable
     {
         // Arrange
         var emptyRoot = Path.Combine(Path.GetTempPath(), $"smarthal-snap-empty-{Guid.NewGuid()}");
-        var sut = new SnapshotManager(emptyRoot, _repo);
+        var sut = new SnapshotManager(emptyRoot, _repo, NullLogger<SnapshotManager>.Instance);
 
         // Act
         var result = await sut.ListSnapshotsAsync();
