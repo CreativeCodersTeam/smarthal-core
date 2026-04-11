@@ -41,6 +41,7 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
             case OutputFormat.Yaml:
                 console.Write(new Text(YamlSerializer.Serialize(items)));
                 break;
+            case OutputFormat.Table:
             default:
                 RenderTable(items, columns);
                 break;
