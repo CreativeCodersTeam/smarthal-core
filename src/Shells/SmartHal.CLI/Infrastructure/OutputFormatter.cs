@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CreativeCoders.Core;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using YamlDotNet.Serialization;
@@ -12,6 +13,8 @@ namespace SmartHal.CLI.Infrastructure;
 /// </summary>
 public class OutputFormatter(CliContext context, IAnsiConsole console)
 {
+    private readonly CliContext _context = Ensure.NotNull(context);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
     private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
         WriteIndented = true,
@@ -33,19 +36,19 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
     /// <param name="columns">Column definitions for table format (header, value selector).</param>
     public void WriteTable<T>(IReadOnlyList<T> items, params (string Header, Func<T, string> Value)[] columns)
     {
-        switch (context.OutputFormat)
+        switch (_context.OutputFormat)
         {
             case OutputFormat.Json:
-                console.WriteLine(JsonSerializer.Serialize(items, JsonOptions));
+                _console.WriteLine(JsonSerializer.Serialize(items, JsonOptions));
                 break;
             case OutputFormat.Yaml:
-                console.Write(new Text(YamlSerializer.Serialize(items)));
+                _console.Write(new Text(YamlSerializer.Serialize(items)));
                 break;
             case OutputFormat.Table:
                 RenderTable(items, columns);
                 break;
             default:
-                throw new NotSupportedException($"Unsupported output format: {context.OutputFormat}");
+                throw new NotSupportedException($"Unsupported output format: {_context.OutputFormat}");
         }
     }
 
@@ -57,13 +60,13 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
     /// <param name="properties">Property definitions for table format (label, value).</param>
     public void WriteObject<T>(T item, params (string Label, string Value)[] properties)
     {
-        switch (context.OutputFormat)
+        switch (_context.OutputFormat)
         {
             case OutputFormat.Json:
-                console.WriteLine(JsonSerializer.Serialize(item, JsonOptions));
+                _console.WriteLine(JsonSerializer.Serialize(item, JsonOptions));
                 break;
             case OutputFormat.Yaml:
-                console.Write(new Text(YamlSerializer.Serialize(item)));
+                _console.Write(new Text(YamlSerializer.Serialize(item)));
                 break;
             default:
                 RenderProperties(properties);
@@ -76,21 +79,21 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
     /// </summary>
     /// <param name="message">The message text.</param>
     public void WriteSuccess(string message) =>
-        console.MarkupLine($"[green]  {Markup.Escape(message)}[/]");
+        _console.MarkupLine($"[green]  {Markup.Escape(message)}[/]");
 
     /// <summary>
     /// Writes an error message.
     /// </summary>
     /// <param name="message">The error message.</param>
     public void WriteError(string message) =>
-        console.MarkupLine($"[red]Error: {Markup.Escape(message)}[/]");
+        _console.MarkupLine($"[red]Error: {Markup.Escape(message)}[/]");
 
     /// <summary>
     /// Writes a warning message.
     /// </summary>
     /// <param name="message">The warning message.</param>
     public void WriteWarning(string message) =>
-        console.MarkupLine($"[yellow]Warning: {Markup.Escape(message)}[/]");
+        _console.MarkupLine($"[yellow]Warning: {Markup.Escape(message)}[/]");
 
     /// <summary>
     /// Writes validation results (errors and warnings).
@@ -109,35 +112,35 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
         var summary = new List<string>();
         if (errors.Count > 0) summary.Add($"{errors.Count} error(s)");
         if (warnings.Count > 0) summary.Add($"{warnings.Count} warning(s)");
-        console.MarkupLine($"Validation: {Markup.Escape(string.Join(", ", summary))}");
-        console.WriteLine();
+        _console.MarkupLine($"Validation: {Markup.Escape(string.Join(", ", summary))}");
+        _console.WriteLine();
 
         if (errors.Count > 0)
         {
-            console.MarkupLine("[red]  Errors:[/]");
+            _console.MarkupLine("[red]  Errors:[/]");
             for (var i = 0; i < errors.Count; i++)
             {
                 var (code, message, filePath) = errors[i];
-                console.MarkupLine($"[red]    {i + 1}. [[{Markup.Escape(code)}]] {Markup.Escape(message)}[/]");
+                _console.MarkupLine($"[red]    {i + 1}. [[{Markup.Escape(code)}]] {Markup.Escape(message)}[/]");
                 if (filePath is not null)
                 {
-                    console.MarkupLine($"[red]       File: {Markup.Escape(filePath)}[/]");
+                    _console.MarkupLine($"[red]       File: {Markup.Escape(filePath)}[/]");
                 }
             }
 
-            console.WriteLine();
+            _console.WriteLine();
         }
 
         if (warnings.Count > 0)
         {
-            console.MarkupLine("[yellow]  Warnings:[/]");
+            _console.MarkupLine("[yellow]  Warnings:[/]");
             for (var i = 0; i < warnings.Count; i++)
             {
                 var (code, message, filePath) = warnings[i];
-                console.MarkupLine($"[yellow]    {i + 1}. [[{Markup.Escape(code)}]] {Markup.Escape(message)}[/]");
+                _console.MarkupLine($"[yellow]    {i + 1}. [[{Markup.Escape(code)}]] {Markup.Escape(message)}[/]");
                 if (filePath is not null)
                 {
-                    console.MarkupLine($"[yellow]       File: {Markup.Escape(filePath)}[/]");
+                    _console.MarkupLine($"[yellow]       File: {Markup.Escape(filePath)}[/]");
                 }
             }
         }
@@ -147,7 +150,7 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
     {
         if (items.Count == 0)
         {
-            console.MarkupLine("[dim]No items found.[/]");
+            _console.MarkupLine("[dim]No items found.[/]");
             return;
         }
 
@@ -165,7 +168,7 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
             table.AddRow(values.Select(v => new Text(v)).ToArray<IRenderable>());
         }
 
-        console.Write(table);
+        _console.Write(table);
     }
 
     private void RenderProperties((string Label, string Value)[] properties)
@@ -174,7 +177,7 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
 
         foreach (var (label, value) in properties)
         {
-            console.MarkupLine($"  [blue]{Markup.Escape(label.PadRight(maxLabel))}[/]  {Markup.Escape(value)}");
+            _console.MarkupLine($"  [blue]{Markup.Escape(label.PadRight(maxLabel))}[/]  {Markup.Escape(value)}");
         }
     }
 }

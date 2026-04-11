@@ -1,3 +1,4 @@
+using CreativeCoders.Core;
 using Spectre.Console;
 
 namespace SmartHal.CLI.Infrastructure;
@@ -7,21 +8,23 @@ namespace SmartHal.CLI.Infrastructure;
 /// </summary>
 public class ConsoleUserInteraction(IAnsiConsole console) : IUserInteraction
 {
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+
     /// <inheritdoc />
     public bool Confirm(string message, bool defaultYes = false)
     {
-        return console.Confirm(message, defaultYes);
+        return _console.Confirm(message, defaultYes);
     }
 
     /// <inheritdoc />
     public string? ReadLine(string prompt)
     {
-        return console.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
+        return _console.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
     }
 
     /// <inheritdoc />
     public string ReadSecret(string prompt)
     {
-        return console.Prompt(new TextPrompt<string>(prompt).Secret());
+        return _console.Prompt(new TextPrompt<string>(prompt).Secret());
     }
 }
