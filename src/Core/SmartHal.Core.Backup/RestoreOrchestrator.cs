@@ -124,7 +124,7 @@ public class RestoreOrchestrator : IRestoreOrchestrator
             },
             ct).ConfigureAwait(false);
 
-        _logger.LogInformation("Created pre-restore safety snapshot");
+        _logger.LogDebug("Created pre-restore safety snapshot");
 
         // Step 2: Optionally bail out early if there are no changes and force was not requested.
         if (!force)

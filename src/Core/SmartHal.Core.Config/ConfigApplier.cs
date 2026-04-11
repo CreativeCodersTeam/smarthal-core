@@ -50,7 +50,7 @@ public class ConfigApplier(ILogger<ConfigApplier> logger) : IConfigApplier
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError("Failed to write parameter {ParameterName}: {ErrorMessage}", parameterName, ex.Message);
+                _logger.LogError(ex, "Failed to write parameter {ParameterName}", parameterName);
 
                 errors.Add($"Failed to write parameter '{parameterName}': {ex.Message}");
             }

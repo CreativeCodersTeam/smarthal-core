@@ -16,7 +16,7 @@ public class CliContextTests
 
         // Assert
         context.ConfigPath.Should().Be("/tmp/test");
-        remaining.Should().BeEquivalentTo(["device", "list"]);
+        remaining.Should().BeEquivalentTo("device", "list");
     }
 
     [Theory]
@@ -64,7 +64,7 @@ public class CliContextTests
         // Assert
         context.Verbosity.Should().Be(LogVerbosity.Normal);
         context.OutputFormat.Should().Be(OutputFormat.Table);
-        remaining.Should().BeEquivalentTo(["device", "list", "--adapter", "hm1"]);
+        remaining.Should().BeEquivalentTo("device", "list", "--adapter", "hm1");
     }
 
     [Fact]
@@ -81,6 +81,6 @@ public class CliContextTests
         context.ConfigPath.Should().Be("/tmp");
         context.Verbosity.Should().Be(LogVerbosity.Debug);
         context.OutputFormat.Should().Be(OutputFormat.Json);
-        remaining.Should().BeEquivalentTo(["device", "list"]);
+        remaining.Should().BeEquivalentTo("device", "list");
     }
 }

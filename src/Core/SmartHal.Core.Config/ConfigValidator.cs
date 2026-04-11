@@ -61,7 +61,7 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
-                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+                _logger.LogError(ex, "Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
 
                 result.Errors.Add(new ValidationError
                 {
@@ -217,7 +217,7 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
-                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+                _logger.LogError(ex, "Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
 
                 result.Errors.Add(new ValidationError
                 {
@@ -260,7 +260,7 @@ public class ConfigValidator : IConfigValidator
             }
             catch (SmartHalConfigFileException ex)
             {
-                _logger.LogError("Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
+                _logger.LogError(ex, "Invalid YAML in {FilePath}: {Message}", ex.FilePath, ex.Message);
 
                 result.Errors.Add(new ValidationError
                 {

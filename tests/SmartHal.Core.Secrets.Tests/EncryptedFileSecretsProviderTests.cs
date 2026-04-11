@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
-public class EncryptedFileSecretsProviderTests : IDisposable
+public sealed class EncryptedFileSecretsProviderTests : IDisposable
 {
     private readonly string _testFilePath;
 
@@ -167,7 +167,7 @@ public class EncryptedFileSecretsProviderTests : IDisposable
         // Arrange
         var provider = CreateProvider("password");
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
         // Act
         var act = () => provider.SetSecretAsync("key", "value", cts.Token);

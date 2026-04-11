@@ -6,7 +6,7 @@ using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
-public class ConfigValidatorTests : IDisposable
+public sealed class ConfigValidatorTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly YamlConfigReader _reader = new YamlConfigReader(NullLogger<YamlConfigReader>.Instance);

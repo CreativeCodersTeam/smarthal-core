@@ -3,7 +3,7 @@ using AwesomeAssertions;
 
 namespace SmartHal.Core.Config;
 
-public class YamlConfigReaderTests : IDisposable
+public sealed class YamlConfigReaderTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly YamlConfigReader _sut = new YamlConfigReader(NullLogger<YamlConfigReader>.Instance);

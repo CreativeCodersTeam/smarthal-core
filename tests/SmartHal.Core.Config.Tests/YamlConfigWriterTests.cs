@@ -5,7 +5,7 @@ using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
-public class YamlConfigWriterTests : IDisposable
+public sealed class YamlConfigWriterTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly YamlConfigWriter _sut = new YamlConfigWriter(NullLogger<YamlConfigWriter>.Instance);

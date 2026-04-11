@@ -6,7 +6,7 @@ using SmartHal.Core.Devices;
 
 namespace SmartHal.Core.Config;
 
-public class FileConfigRepositoryTests : IDisposable
+public sealed class FileConfigRepositoryTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly IConfigReader _reader;

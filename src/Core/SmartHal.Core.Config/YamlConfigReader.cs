@@ -90,7 +90,7 @@ public class YamlConfigReader(ILogger<YamlConfigReader> logger) : IConfigReader
         }
         catch (YamlDotNet.Core.YamlException ex)
         {
-            _logger.LogError("Failed to parse YAML file {FilePath}: {Message}", filePath, ex.Message);
+            _logger.LogError(ex, "Failed to parse YAML file {FilePath}: {Message}", filePath, ex.Message);
 
             throw new SmartHalConfigFileException(
                 $"Failed to parse YAML file: {ex.Message}",

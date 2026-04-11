@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
-public class EnvironmentVariableSecretsProviderTests : IDisposable
+public sealed class EnvironmentVariableSecretsProviderTests : IDisposable
 {
     private const string TestKey = "test-adapter.test_secret";
     private const string TestEnvVar = "SMARTHAL_TEST_ADAPTER_TEST_SECRET";

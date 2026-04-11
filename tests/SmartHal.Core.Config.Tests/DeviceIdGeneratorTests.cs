@@ -3,7 +3,7 @@ using AwesomeAssertions;
 
 namespace SmartHal.Core.Config;
 
-public class DeviceIdGeneratorTests : IDisposable
+public sealed class DeviceIdGeneratorTests : IDisposable
 {
     private readonly string _tempDir;
 
