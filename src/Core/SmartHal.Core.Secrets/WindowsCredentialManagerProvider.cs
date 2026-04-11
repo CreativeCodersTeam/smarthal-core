@@ -1,6 +1,6 @@
+using CreativeCoders.Core;
 using GitCredentialManager;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -19,14 +19,14 @@ public class WindowsCredentialManagerProvider : ISecretsProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsCredentialManagerProvider"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
     /// <exception cref="PlatformNotSupportedException">The current platform is not Windows.</exception>
     public WindowsCredentialManagerProvider(
-        ILogger<WindowsCredentialManagerProvider>? logger = null,
+        ILogger<WindowsCredentialManagerProvider> logger,
         string credentialNamespace = "SmartHal")
     {
-        _logger = logger ?? NullLogger<WindowsCredentialManagerProvider>.Instance;
+        _logger = Ensure.NotNull(logger);
 
         if (!OperatingSystem.IsWindows())
         {

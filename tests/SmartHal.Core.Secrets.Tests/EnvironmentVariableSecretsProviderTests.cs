@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -21,7 +22,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public void ProviderName_IsEnv()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act & Assert
         provider.ProviderName.Should().Be("env");
@@ -31,7 +33,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task GetSecretAsync_ExistingKey_ReturnsValue()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var value = await provider.GetSecretAsync(TestKey);
@@ -44,7 +47,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task GetSecretAsync_MissingKey_ThrowsSecretNotFoundException()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var act = () => provider.GetSecretAsync("nonexistent.key");
@@ -57,7 +61,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task ExistsAsync_ExistingKey_ReturnsTrue()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var exists = await provider.ExistsAsync(TestKey);
@@ -70,7 +75,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task ExistsAsync_MissingKey_ReturnsFalse()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var exists = await provider.ExistsAsync("nonexistent.key");
@@ -83,7 +89,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task SetSecretAsync_ThrowsSecretsProviderException()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var act = () => provider.SetSecretAsync("any.key", "value");
@@ -96,7 +103,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task DeleteSecretAsync_ThrowsSecretsProviderException()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var act = () => provider.DeleteSecretAsync("any.key");
@@ -109,7 +117,8 @@ public class EnvironmentVariableSecretsProviderTests : IDisposable
     public async Task ListKeysAsync_ReturnsKeysWithPrefix()
     {
         // Arrange
-        var provider = new EnvironmentVariableSecretsProvider();
+        var provider = new EnvironmentVariableSecretsProvider(
+            NullLogger<EnvironmentVariableSecretsProvider>.Instance);
 
         // Act
         var keys = await provider.ListKeysAsync();

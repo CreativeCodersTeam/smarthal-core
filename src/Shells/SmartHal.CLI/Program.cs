@@ -43,6 +43,7 @@ try
             services.AddSingleton<SecretsProviderFactory>(sp =>
                 new SecretsProviderFactory(
                     sp.GetRequiredService<ILogger<SecretsProviderFactory>>(),
+                    sp.GetRequiredService<ILoggerFactory>(),
                     () => Task.FromResult(
                         sp.GetRequiredService<IUserInteraction>().ReadSecret("Enter password: "))));
 

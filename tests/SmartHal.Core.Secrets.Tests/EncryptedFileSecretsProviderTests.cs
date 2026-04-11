@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -193,5 +194,8 @@ public class EncryptedFileSecretsProviderTests : IDisposable
     }
 
     private EncryptedFileSecretsProvider CreateProvider(string password) =>
-        new EncryptedFileSecretsProvider(() => Task.FromResult(password), _testFilePath);
+        new EncryptedFileSecretsProvider(
+            () => Task.FromResult(password),
+            NullLogger<EncryptedFileSecretsProvider>.Instance,
+            _testFilePath);
 }

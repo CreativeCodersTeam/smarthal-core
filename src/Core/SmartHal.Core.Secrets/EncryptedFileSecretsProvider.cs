@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using CreativeCoders.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -35,18 +34,18 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
     /// Initializes a new instance of the <see cref="EncryptedFileSecretsProvider"/> class.
     /// </summary>
     /// <param name="passwordCallback">Callback to retrieve the master password when needed.</param>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="filePath">Path to the encrypted secrets file. Defaults to <c>~/.smarthal/secrets.enc</c>.</param>
-    /// <param name="logger">Optional logger instance.</param>
     public EncryptedFileSecretsProvider(
         Func<Task<string>> passwordCallback,
-        string? filePath = null,
-        ILogger<EncryptedFileSecretsProvider>? logger = null)
+        ILogger<EncryptedFileSecretsProvider> logger,
+        string? filePath = null)
     {
         _passwordCallback = Ensure.NotNull(passwordCallback);
+        _logger = Ensure.NotNull(logger);
         _filePath = filePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".smarthal", "secrets.enc");
-        _logger = logger ?? NullLogger<EncryptedFileSecretsProvider>.Instance;
     }
 
     /// <inheritdoc />

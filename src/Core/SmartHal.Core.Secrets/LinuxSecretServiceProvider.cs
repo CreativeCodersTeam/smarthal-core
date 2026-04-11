@@ -1,6 +1,6 @@
+using CreativeCoders.Core;
 using GitCredentialManager;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -19,14 +19,14 @@ public class LinuxSecretServiceProvider : ISecretsProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="LinuxSecretServiceProvider"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="credentialNamespace">The credential namespace to use. Defaults to <c>SmartHal</c>.</param>
     /// <exception cref="PlatformNotSupportedException">The current platform is not Linux.</exception>
     public LinuxSecretServiceProvider(
-        ILogger<LinuxSecretServiceProvider>? logger = null,
+        ILogger<LinuxSecretServiceProvider> logger,
         string credentialNamespace = "SmartHal")
     {
-        _logger = logger ?? NullLogger<LinuxSecretServiceProvider>.Instance;
+        _logger = Ensure.NotNull(logger);
 
         if (!OperatingSystem.IsLinux())
         {

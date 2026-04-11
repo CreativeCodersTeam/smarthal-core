@@ -1,5 +1,5 @@
+using CreativeCoders.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace SmartHal.Core.Secrets;
 
@@ -9,12 +9,11 @@ namespace SmartHal.Core.Secrets;
 /// This provider is read-only — <see cref="SetSecretAsync"/> and <see cref="DeleteSecretAsync"/> throw.
 /// </summary>
 public class EnvironmentVariableSecretsProvider(
-    ILogger<EnvironmentVariableSecretsProvider>? logger = null) : ISecretsProvider
+    ILogger<EnvironmentVariableSecretsProvider> logger) : ISecretsProvider
 {
     private const string Prefix = "SMARTHAL_";
 
-    private readonly ILogger<EnvironmentVariableSecretsProvider> _logger =
-        logger ?? NullLogger<EnvironmentVariableSecretsProvider>.Instance;
+    private readonly ILogger<EnvironmentVariableSecretsProvider> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public string ProviderName => "env";

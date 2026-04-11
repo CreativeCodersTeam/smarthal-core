@@ -23,7 +23,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var console = new TestConsole();
 
         A.CallTo(() => repo.GetMetaAsync(A<CancellationToken>._))
@@ -54,7 +54,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -78,7 +78,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -103,7 +103,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -128,7 +128,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -152,7 +152,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var interaction = A.Fake<IUserInteraction>();
         var console = new TestConsole();
         var formatter = new OutputFormatter(cliContext, console);
@@ -173,7 +173,7 @@ public class SecretCommandTests
         // Arrange
         var cliContext = new CliContext { ConfigPath = "/tmp/test" };
         var repo = A.Fake<IConfigRepository>();
-        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance);
+        var factory = new SecretsProviderFactory(NullLogger<SecretsProviderFactory>.Instance, NullLoggerFactory.Instance);
         var console = new TestConsole();
         var formatter = new OutputFormatter(new CliContext { OutputFormat = OutputFormat.Json }, console);
 
