@@ -42,9 +42,10 @@ public class OutputFormatter(CliContext context, IAnsiConsole console)
                 console.Write(new Text(YamlSerializer.Serialize(items)));
                 break;
             case OutputFormat.Table:
-            default:
                 RenderTable(items, columns);
                 break;
+            default:
+                throw new NotSupportedException($"Unsupported output format: {context.OutputFormat}");
         }
     }
 
