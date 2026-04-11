@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -22,23 +23,30 @@ public class DeviceReplaceCommand(
     OutputFormatter formatter,
     ILogger<DeviceReplaceCommand> logger) : ICliCommand<DeviceReplaceOptions>
 {
-    private readonly ILogger<DeviceReplaceCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly IConfigApplier _applier = Ensure.NotNull(applier);
+    private readonly IConfigDiffer _differ = Ensure.NotNull(differ);
+    private readonly Core.Adapters.IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<DeviceReplaceCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceReplaceOptions options)
     {
         _logger.LogInformation("Replacing device {DeviceId} native ID to {NewNativeId}", options.DeviceId, options.NewNativeId);
 
-        var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
+        var device = await _configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
 
-        if (!interaction.Confirm($"Replace device '{options.DeviceId}' native ID '{device.NativeId}' -> '{options.NewNativeId}'?"))
+        if (!_interaction.Confirm($"Replace device '{options.DeviceId}' native ID '{device.NativeId}' -> '{options.NewNativeId}'?"))
         {
-            formatter.WriteSuccess("Cancelled.");
+            _formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
         // 1. Pre-replace snapshot
-        await snapshotManager.CreateSnapshotAsync(new SnapshotRequest
+        await _snapshotManager.CreateSnapshotAsync(new SnapshotRequest
         {
             Scope = ConfigScope.Device,
             ScopeId = options.DeviceId,
@@ -49,25 +57,25 @@ public class DeviceReplaceCommand(
         // 2. Update native_id in YAML
         var oldNativeId = device.NativeId;
         device.NativeId = options.NewNativeId;
-        await configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
+        await _configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
 
         // 3. Apply configuration to new device
-        var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
-        await using var adapter = adapterFactory.CreateAdapter(adapterConfig);
+        var adapterConfig = await _configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
+        await using var adapter = _adapterFactory.CreateAdapter(adapterConfig);
 
         if (adapter is Core.Adapters.IDeviceReader reader)
         {
             var liveDevice = await reader.ReadDeviceAsync(options.NewNativeId).ConfigureAwait(false);
-            var diff = differ.ComputeDiff(device, liveDevice);
+            var diff = _differ.ComputeDiff(device, liveDevice);
 
             if (diff.HasChanges)
             {
-                await applier.ApplyDiffAsync(diff, adapter, options.NewNativeId).ConfigureAwait(false);
-                formatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to new device.");
+                await _applier.ApplyDiffAsync(diff, adapter, options.NewNativeId).ConfigureAwait(false);
+                _formatter.WriteSuccess($"Applied {diff.Changes.Count} change(s) to new device.");
             }
         }
 
-        formatter.WriteSuccess(
+        _formatter.WriteSuccess(
             $"Replaced device '{options.DeviceId}': {oldNativeId} -> {options.NewNativeId}.");
 
         return CommandResult.Success;

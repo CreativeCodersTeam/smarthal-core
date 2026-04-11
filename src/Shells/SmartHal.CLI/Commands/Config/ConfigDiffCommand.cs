@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -19,34 +20,38 @@ public class ConfigDiffCommand(
     OutputFormatter formatter,
     ILogger<ConfigDiffCommand> logger) : ICliCommand<ConfigDiffOptions>
 {
-    private readonly ILogger<ConfigDiffCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IConfigDiffer _differ = Ensure.NotNull(differ);
+    private readonly IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<ConfigDiffCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigDiffOptions options)
     {
         _logger.LogInformation("Computing diff for device {DeviceId}", options.DeviceId);
 
-        var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
-        var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
+        var device = await _configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
+        var adapterConfig = await _configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
 
-        await using var adapter = adapterFactory.CreateAdapter(adapterConfig);
+        await using var adapter = _adapterFactory.CreateAdapter(adapterConfig);
 
         if (adapter is not IDeviceReader reader)
         {
-            formatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
+            _formatter.WriteError($"Adapter '{device.AdapterId}' does not support reading device state.");
             return new CommandResult(1);
         }
 
         var liveDevice = await reader.ReadDeviceAsync(device.NativeId).ConfigureAwait(false);
-        var diff = differ.ComputeDiff(device, liveDevice);
+        var diff = _differ.ComputeDiff(device, liveDevice);
 
         if (!diff.HasChanges)
         {
-            formatter.WriteSuccess("No differences found.");
+            _formatter.WriteSuccess("No differences found.");
             return CommandResult.Success;
         }
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             diff.Changes.ToList(),
             ("Kind", c => c.Kind.ToString()),
             ("Path", c => c.Path),

@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -19,28 +20,32 @@ public class ConfigValidateCommand(
     OutputFormatter formatter,
     ILogger<ConfigValidateCommand> logger) : ICliCommand<ConfigValidateOptions>
 {
-    private readonly ILogger<ConfigValidateCommand> _logger = logger;
+    private readonly CliContext _cliContext = Ensure.NotNull(cliContext);
+    private readonly IConfigValidator _validator = Ensure.NotNull(validator);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<ConfigValidateCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigValidateOptions options)
     {
-        _logger.LogInformation("Validating config at {ConfigPath}", cliContext.ConfigPath);
+        _logger.LogInformation("Validating config at {ConfigPath}", _cliContext.ConfigPath);
 
-        var result = await validator.ValidateStructureAsync(cliContext.ConfigPath).ConfigureAwait(false);
+        var result = await _validator.ValidateStructureAsync(_cliContext.ConfigPath).ConfigureAwait(false);
 
         if (options.Full && result.IsValid)
         {
-            var semanticResult = await validator.ValidateSemanticAsync(configRepository).ConfigureAwait(false);
+            var semanticResult = await _validator.ValidateSemanticAsync(_configRepository).ConfigureAwait(false);
             result = MergeResults(result, semanticResult);
         }
 
         if (result.IsValid && result.Warnings.Count == 0)
         {
-            formatter.WriteSuccess("Configuration is valid.");
+            _formatter.WriteSuccess("Configuration is valid.");
             return CommandResult.Success;
         }
 
-        formatter.WriteValidationResults(
+        _formatter.WriteValidationResults(
             result.Errors.Select(e => (e.Code, e.Message, e.FilePath)).ToList(),
             result.Warnings.Select(w => (w.Code, w.Message, w.FilePath)).ToList());
 

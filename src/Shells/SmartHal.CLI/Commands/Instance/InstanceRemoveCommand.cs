@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -17,7 +18,10 @@ public class InstanceRemoveCommand(
     OutputFormatter formatter,
     ILogger<InstanceRemoveCommand> logger) : ICliCommand<InstanceRemoveOptions>
 {
-    private readonly ILogger<InstanceRemoveCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<InstanceRemoveCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(InstanceRemoveOptions options)
@@ -25,11 +29,11 @@ public class InstanceRemoveCommand(
         _logger.LogInformation("Removing adapter instance {InstanceId}", options.InstanceId);
 
         // Verify instance exists
-        var config = await configRepository.GetAdapterConfigAsync(options.InstanceId).ConfigureAwait(false);
+        var config = await _configRepository.GetAdapterConfigAsync(options.InstanceId).ConfigureAwait(false);
 
-        if (!interaction.Confirm($"Remove adapter instance '{config.AdapterId}' (type: {config.AdapterType})?"))
+        if (!_interaction.Confirm($"Remove adapter instance '{config.AdapterId}' (type: {config.AdapterType})?"))
         {
-            formatter.WriteSuccess("Cancelled.");
+            _formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
@@ -40,7 +44,7 @@ public class InstanceRemoveCommand(
             File.Delete(adapterFilePath);
         }
 
-        formatter.WriteSuccess($"Instance '{options.InstanceId}' removed.");
+        _formatter.WriteSuccess($"Instance '{options.InstanceId}' removed.");
         return CommandResult.Success;
     }
 }

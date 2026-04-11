@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -16,16 +17,18 @@ public class InstanceListCommand(
     OutputFormatter formatter,
     ILogger<InstanceListCommand> logger) : ICliCommand
 {
-    private readonly ILogger<InstanceListCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<InstanceListCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync()
     {
         _logger.LogInformation("Listing adapter instances");
 
-        var configs = await configRepository.GetAllAdapterConfigsAsync().ConfigureAwait(false);
+        var configs = await _configRepository.GetAllAdapterConfigsAsync().ConfigureAwait(false);
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             configs.ToList(),
             ("Instance ID", c => c.AdapterId),
             ("Type", c => c.AdapterType),

@@ -18,7 +18,7 @@ public class ConfigValidator : IConfigValidator
     /// <param name="logger">The logger instance.</param>
     public ConfigValidator(IConfigReader reader, ILogger<ConfigValidator> logger)
     {
-        _reader = reader;
+        _reader = Ensure.NotNull(reader);
         _logger = Ensure.NotNull(logger);
     }
 

@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -19,18 +20,22 @@ public class BackupRestoreCommand(
     OutputFormatter formatter,
     ILogger<BackupRestoreCommand> logger) : ICliCommand<BackupRestoreOptions>
 {
-    private readonly ILogger<BackupRestoreCommand> _logger = logger;
+    private readonly IRestoreOrchestrator _orchestrator = Ensure.NotNull(orchestrator);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupRestoreCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupRestoreOptions options)
     {
         _logger.LogInformation("Restoring snapshot {SnapshotId} (dryRun: {DryRun})", options.SnapshotId, options.DryRun);
 
-        var preview = await orchestrator.PreviewRestoreAsync(options.SnapshotId).ConfigureAwait(false);
+        var preview = await _orchestrator.PreviewRestoreAsync(options.SnapshotId).ConfigureAwait(false);
 
         if (!preview.HasChanges)
         {
-            formatter.WriteSuccess("No changes to restore — snapshot matches current state.");
+            _formatter.WriteSuccess("No changes to restore — snapshot matches current state.");
             return CommandResult.Success;
         }
 
@@ -41,9 +46,9 @@ public class BackupRestoreCommand(
 
         foreach (var device in changedDevices)
         {
-            console.MarkupLine(
+            _console.MarkupLine(
                 $"  Device: [bold]{Markup.Escape(device.DeviceId)}[/] {(device.DeviceExists ? "" : "[dim](deleted)[/]")}");
-            formatter.WriteTable(
+            _formatter.WriteTable(
                 device.Diff.Changes.ToList(),
                 ("Kind", c => c.Kind.ToString()),
                 ("Path", c => c.Path),
@@ -53,26 +58,26 @@ public class BackupRestoreCommand(
 
         if (options.DryRun)
         {
-            formatter.WriteSuccess("Dry run — no changes applied.");
+            _formatter.WriteSuccess("Dry run — no changes applied.");
             return CommandResult.Success;
         }
 
-        if (!interaction.Confirm("Proceed with restore?"))
+        if (!_interaction.Confirm("Proceed with restore?"))
         {
-            formatter.WriteSuccess("Cancelled.");
+            _formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
-        var result = await orchestrator.RestoreAsync(options.SnapshotId).ConfigureAwait(false);
+        var result = await _orchestrator.RestoreAsync(options.SnapshotId).ConfigureAwait(false);
 
-        formatter.WriteSuccess(
+        _formatter.WriteSuccess(
             $"Restored {result.DevicesRestored} device(s), {result.DevicesSkipped} skipped.");
 
         if (!result.Success)
         {
             foreach (var error in result.Errors)
             {
-                formatter.WriteError($"  {error.DeviceId}: {error.Message}");
+                _formatter.WriteError($"  {error.DeviceId}: {error.Message}");
             }
         }
 

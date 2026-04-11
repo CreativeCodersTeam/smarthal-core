@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -17,7 +18,9 @@ public class BackupCreateCommand(
     OutputFormatter formatter,
     ILogger<BackupCreateCommand> logger) : ICliCommand<BackupCreateOptions>
 {
-    private readonly ILogger<BackupCreateCommand> _logger = logger;
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupCreateCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupCreateOptions options)
@@ -39,9 +42,9 @@ public class BackupCreateCommand(
             Trigger = "manual"
         };
 
-        var manifest = await snapshotManager.CreateSnapshotAsync(request).ConfigureAwait(false);
+        var manifest = await _snapshotManager.CreateSnapshotAsync(request).ConfigureAwait(false);
 
-        formatter.WriteObject(
+        _formatter.WriteObject(
             manifest,
             ("Snapshot ID", manifest.SnapshotId),
             ("Created", manifest.CreatedAt.ToString("o")),

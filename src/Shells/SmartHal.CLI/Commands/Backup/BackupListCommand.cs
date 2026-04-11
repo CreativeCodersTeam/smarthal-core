@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -17,7 +18,9 @@ public class BackupListCommand(
     OutputFormatter formatter,
     ILogger<BackupListCommand> logger) : ICliCommand<BackupListOptions>
 {
-    private readonly ILogger<BackupListCommand> _logger = logger;
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupListCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupListOptions options)
@@ -36,11 +39,11 @@ public class BackupListCommand(
             filter.Since = since;
         }
 
-        var snapshots = await snapshotManager.ListSnapshotsAsync(filter).ConfigureAwait(false);
+        var snapshots = await _snapshotManager.ListSnapshotsAsync(filter).ConfigureAwait(false);
 
         _logger.LogDebug("Found {Count} snapshot(s)", snapshots.Count());
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             snapshots.ToList(),
             ("ID", s => s.SnapshotId),
             ("Created", s => s.CreatedAt.ToString("yyyy-MM-dd HH:mm")),

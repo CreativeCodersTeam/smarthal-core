@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -20,7 +21,11 @@ public class AdapterConfigureCommand(
     OutputFormatter formatter,
     ILogger<AdapterConfigureCommand> logger) : ICliCommand<AdapterConfigureOptions>
 {
-    private readonly ILogger<AdapterConfigureCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<AdapterConfigureCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(AdapterConfigureOptions options)
@@ -31,17 +36,17 @@ public class AdapterConfigureCommand(
 
         try
         {
-            config = await configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
+            config = await _configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
         }
         catch
         {
-            formatter.WriteError($"Adapter '{options.AdapterId}' not found.");
+            _formatter.WriteError($"Adapter '{options.AdapterId}' not found.");
             return new CommandResult(1);
         }
 
-        console.MarkupLine(
+        _console.MarkupLine(
             $"Configuring adapter [bold]'{Markup.Escape(config.AdapterId)}'[/] (type: {Markup.Escape(config.AdapterType)})");
-        console.MarkupLine("[dim]Enter settings (empty value to skip):[/]");
+        _console.MarkupLine("[dim]Enter settings (empty value to skip):[/]");
 
         var updated = false;
         foreach (var key in config.Settings.Keys.ToList())
@@ -51,8 +56,8 @@ public class AdapterConfigureCommand(
             var prompt = $"  {key} [{(isSecret ? "***" : current)}]: ";
 
             var value = isSecret
-                ? interaction.ReadSecret(prompt)
-                : interaction.ReadLine(prompt);
+                ? _interaction.ReadSecret(prompt)
+                : _interaction.ReadLine(prompt);
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -63,12 +68,12 @@ public class AdapterConfigureCommand(
 
         if (updated)
         {
-            await configRepository.SaveAdapterConfigAsync(config).ConfigureAwait(false);
-            formatter.WriteSuccess($"Adapter '{options.AdapterId}' configuration updated.");
+            await _configRepository.SaveAdapterConfigAsync(config).ConfigureAwait(false);
+            _formatter.WriteSuccess($"Adapter '{options.AdapterId}' configuration updated.");
         }
         else
         {
-            formatter.WriteSuccess("No changes made.");
+            _formatter.WriteSuccess("No changes made.");
         }
 
         return CommandResult.Success;

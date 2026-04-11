@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -19,18 +20,22 @@ public class SecretListCommand(
     OutputFormatter formatter,
     ILogger<SecretListCommand> logger) : ICliCommand
 {
-    private readonly ILogger<SecretListCommand> _logger = logger;
+    private readonly CliContext _cliContext = Ensure.NotNull(cliContext);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly SecretsProviderFactory _secretsFactory = Ensure.NotNull(secretsFactory);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<SecretListCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync()
     {
         _logger.LogInformation("Listing secrets");
-        var meta = await configRepository.GetMetaAsync().ConfigureAwait(false);
-        var provider = secretsFactory.Create(meta.SecretsProvider, cliContext.ConfigPath);
+        var meta = await _configRepository.GetMetaAsync().ConfigureAwait(false);
+        var provider = _secretsFactory.Create(meta.SecretsProvider, _cliContext.ConfigPath);
 
         var keys = await provider.ListKeysAsync().ConfigureAwait(false);
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             keys.ToList(),
             ("Key", k => k));
 

@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -17,7 +18,9 @@ public class DeviceListCommand(
     OutputFormatter formatter,
     ILogger<DeviceListCommand> logger) : ICliCommand<DeviceListOptions>
 {
-    private readonly ILogger<DeviceListCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<DeviceListCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceListOptions options)
@@ -33,11 +36,11 @@ public class DeviceListCommand(
             NamePattern = options.NamePattern
         };
 
-        var devices = await configRepository.ListDevicesAsync(filter).ConfigureAwait(false);
+        var devices = await _configRepository.ListDevicesAsync(filter).ConfigureAwait(false);
 
         _logger.LogDebug("Found {Count} device(s)", devices.Count());
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             devices.ToList(),
             ("ID", d => d.Id),
             ("Name", d => d.Name),

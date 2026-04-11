@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -19,21 +20,24 @@ public class DeviceSetCommand(
     OutputFormatter formatter,
     ILogger<DeviceSetCommand> logger) : ICliCommand<DeviceSetOptions>
 {
-    private readonly ILogger<DeviceSetCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<DeviceSetCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceSetOptions options)
     {
         _logger.LogInformation("Setting parameter {ParameterName} on device {DeviceId}", options.Parameter, options.DeviceId);
 
-        var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
-        var adapterConfig = await configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
+        var device = await _configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
+        var adapterConfig = await _configRepository.GetAdapterConfigAsync(device.AdapterId).ConfigureAwait(false);
 
-        await using var adapter = adapterFactory.CreateAdapter(adapterConfig);
+        await using var adapter = _adapterFactory.CreateAdapter(adapterConfig);
 
         if (adapter is not IDeviceWriter writer)
         {
-            formatter.WriteError($"Adapter '{device.AdapterId}' does not support writing parameters.");
+            _formatter.WriteError($"Adapter '{device.AdapterId}' does not support writing parameters.");
             return new CommandResult(1);
         }
 
@@ -43,9 +47,9 @@ public class DeviceSetCommand(
 
         // Update YAML
         device.Parameters[options.Parameter] = paramValue;
-        await configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
+        await _configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
 
-        formatter.WriteSuccess($"Set '{options.Parameter}' = '{options.Value}' on device '{options.DeviceId}'.");
+        _formatter.WriteSuccess($"Set '{options.Parameter}' = '{options.Value}' on device '{options.DeviceId}'.");
         return CommandResult.Success;
     }
 }

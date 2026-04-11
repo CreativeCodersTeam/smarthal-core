@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -16,7 +17,9 @@ public class BackupCleanupCommand(
     OutputFormatter formatter,
     ILogger<BackupCleanupCommand> logger) : ICliCommand<BackupCleanupOptions>
 {
-    private readonly ILogger<BackupCleanupCommand> _logger = logger;
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupCleanupCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupCleanupOptions options)
@@ -30,9 +33,9 @@ public class BackupCleanupCommand(
             KeepManualSnapshots = options.KeepManual
         };
 
-        var deleted = await snapshotManager.ApplyRetentionPolicyAsync(policy).ConfigureAwait(false);
+        var deleted = await _snapshotManager.ApplyRetentionPolicyAsync(policy).ConfigureAwait(false);
 
-        formatter.WriteSuccess($"Deleted {deleted} snapshot(s).");
+        _formatter.WriteSuccess($"Deleted {deleted} snapshot(s).");
         return CommandResult.Success;
     }
 }

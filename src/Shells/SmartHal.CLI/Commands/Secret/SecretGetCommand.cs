@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -20,19 +21,23 @@ public class SecretGetCommand(
     IAnsiConsole console,
     ILogger<SecretGetCommand> logger) : ICliCommand<SecretGetOptions>
 {
-    private readonly ILogger<SecretGetCommand> _logger = logger;
+    private readonly CliContext _cliContext = Ensure.NotNull(cliContext);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly SecretsProviderFactory _secretsFactory = Ensure.NotNull(secretsFactory);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+    private readonly ILogger<SecretGetCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(SecretGetOptions options)
     {
         _logger.LogInformation("Getting secret {Key}", options.Key);
-        var meta = await configRepository.GetMetaAsync().ConfigureAwait(false);
-        var provider = secretsFactory.Create(meta.SecretsProvider, cliContext.ConfigPath);
+        var meta = await _configRepository.GetMetaAsync().ConfigureAwait(false);
+        var provider = _secretsFactory.Create(meta.SecretsProvider, _cliContext.ConfigPath);
 
         var value = await provider.GetSecretAsync(options.Key).ConfigureAwait(false);
 
         // Value goes to stdout for piping
-        console.WriteLine(value);
+        _console.WriteLine(value);
         return CommandResult.Success;
     }
 }

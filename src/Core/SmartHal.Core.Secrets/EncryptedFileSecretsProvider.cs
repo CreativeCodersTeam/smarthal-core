@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using CreativeCoders.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -41,7 +42,7 @@ public class EncryptedFileSecretsProvider : ISecretsProvider
         string? filePath = null,
         ILogger<EncryptedFileSecretsProvider>? logger = null)
     {
-        _passwordCallback = passwordCallback;
+        _passwordCallback = Ensure.NotNull(passwordCallback);
         _filePath = filePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".smarthal", "secrets.enc");

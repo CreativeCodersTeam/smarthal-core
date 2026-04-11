@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -18,16 +19,20 @@ public class ConfigInitCommand(
     OutputFormatter formatter,
     ILogger<ConfigInitCommand> logger) : ICliCommand<ConfigInitOptions>
 {
-    private readonly ILogger<ConfigInitCommand> _logger = logger;
+    private readonly CliContext _cliContext = Ensure.NotNull(cliContext);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<ConfigInitCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(ConfigInitOptions options)
     {
-        var configPath = options.Path ?? cliContext.ConfigPath;
+        var configPath = options.Path ?? _cliContext.ConfigPath;
 
         _logger.LogInformation("Initializing config at {ConfigPath}", configPath);
 
-        var secretsProvider = interaction.ReadLine("Secrets provider [auto/env/file]: ")?.Trim();
+        var secretsProvider = _interaction.ReadLine("Secrets provider [auto/env/file]: ")?.Trim();
         if (string.IsNullOrWhiteSpace(secretsProvider))
         {
             secretsProvider = "auto";
@@ -40,9 +45,9 @@ public class ConfigInitCommand(
             ConfigPath = configPath
         };
 
-        await configRepository.InitializeAsync(meta).ConfigureAwait(false);
+        await _configRepository.InitializeAsync(meta).ConfigureAwait(false);
 
-        formatter.WriteSuccess($"Configuration initialized at {configPath}");
+        _formatter.WriteSuccess($"Configuration initialized at {configPath}");
         return CommandResult.Success;
     }
 }

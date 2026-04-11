@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -17,22 +18,25 @@ public class BackupDeleteCommand(
     OutputFormatter formatter,
     ILogger<BackupDeleteCommand> logger) : ICliCommand<BackupDeleteOptions>
 {
-    private readonly ILogger<BackupDeleteCommand> _logger = logger;
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupDeleteCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupDeleteOptions options)
     {
         _logger.LogInformation("Deleting snapshot {SnapshotId}", options.SnapshotId);
 
-        if (!interaction.Confirm($"Delete snapshot '{options.SnapshotId}'?"))
+        if (!_interaction.Confirm($"Delete snapshot '{options.SnapshotId}'?"))
         {
-            formatter.WriteSuccess("Cancelled.");
+            _formatter.WriteSuccess("Cancelled.");
             return CommandResult.Success;
         }
 
-        await snapshotManager.DeleteSnapshotAsync(options.SnapshotId).ConfigureAwait(false);
+        await _snapshotManager.DeleteSnapshotAsync(options.SnapshotId).ConfigureAwait(false);
 
-        formatter.WriteSuccess($"Snapshot '{options.SnapshotId}' deleted.");
+        _formatter.WriteSuccess($"Snapshot '{options.SnapshotId}' deleted.");
         return CommandResult.Success;
     }
 }

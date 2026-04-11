@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -20,19 +21,24 @@ public class DeviceDiscoverCommand(
     OutputFormatter formatter,
     ILogger<DeviceDiscoverCommand> logger) : ICliCommand<DeviceDiscoverOptions>
 {
-    private readonly ILogger<DeviceDiscoverCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly IIdGenerator _idGenerator = Ensure.NotNull(idGenerator);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<DeviceDiscoverCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceDiscoverOptions options)
     {
         _logger.LogInformation("Discovering devices via adapter {AdapterId}", options.AdapterId);
 
-        var adapterConfig = await configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
-        await using var adapter = adapterFactory.CreateAdapter(adapterConfig);
+        var adapterConfig = await _configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
+        await using var adapter = _adapterFactory.CreateAdapter(adapterConfig);
 
         if (adapter is not IDeviceDiscovery discovery)
         {
-            formatter.WriteError($"Adapter '{options.AdapterId}' does not support device discovery.");
+            _formatter.WriteError($"Adapter '{options.AdapterId}' does not support device discovery.");
             return new CommandResult(1);
         }
 
@@ -40,11 +46,11 @@ public class DeviceDiscoverCommand(
 
         if (discovered.Count == 0)
         {
-            formatter.WriteSuccess("No new devices discovered.");
+            _formatter.WriteSuccess("No new devices discovered.");
             return CommandResult.Success;
         }
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             discovered.ToList(),
             ("Native ID", d => d.NativeId),
             ("Name", d => d.Name),
@@ -52,20 +58,20 @@ public class DeviceDiscoverCommand(
 
         foreach (var device in discovered)
         {
-            var answer = interaction.Confirm($"Import '{device.Name}' ({device.NativeId})?");
+            var answer = _interaction.Confirm($"Import '{device.Name}' ({device.NativeId})?");
             if (!answer)
             {
                 continue;
             }
 
-            var deviceId = await idGenerator.GenerateDeviceIdAsync(
+            var deviceId = await _idGenerator.GenerateDeviceIdAsync(
                 adapterConfig.AdapterType, device.Name).ConfigureAwait(false);
 
             device.Id = deviceId;
             device.AdapterId = options.AdapterId;
 
-            await configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
-            formatter.WriteSuccess($"Imported as '{deviceId}'.");
+            await _configRepository.SaveDeviceAsync(device).ConfigureAwait(false);
+            _formatter.WriteSuccess($"Imported as '{deviceId}'.");
         }
 
         return CommandResult.Success;

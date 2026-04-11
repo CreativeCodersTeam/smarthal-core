@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -20,20 +21,24 @@ public class AdapterListCommand(
     OutputFormatter formatter,
     ILogger<AdapterListCommand> logger) : ICliCommand
 {
-    private readonly ILogger<AdapterListCommand> _logger = logger;
+    private readonly IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<AdapterListCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync()
     {
         _logger.LogInformation("Listing adapters");
 
-        var types = adapterFactory.GetAvailableAdapterTypes();
-        console.MarkupLine($"Registered adapter types: [bold]{Markup.Escape(string.Join(", ", types))}[/]");
-        console.WriteLine();
+        var types = _adapterFactory.GetAvailableAdapterTypes();
+        _console.MarkupLine($"Registered adapter types: [bold]{Markup.Escape(string.Join(", ", types))}[/]");
+        _console.WriteLine();
 
-        var configs = await configRepository.GetAllAdapterConfigsAsync().ConfigureAwait(false);
+        var configs = await _configRepository.GetAllAdapterConfigsAsync().ConfigureAwait(false);
 
-        formatter.WriteTable(
+        _formatter.WriteTable(
             configs.ToList(),
             ("Adapter ID", c => c.AdapterId),
             ("Type", c => c.AdapterType),

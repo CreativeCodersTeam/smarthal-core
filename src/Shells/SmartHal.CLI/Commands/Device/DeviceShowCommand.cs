@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -16,16 +17,18 @@ public class DeviceShowCommand(
     OutputFormatter formatter,
     ILogger<DeviceShowCommand> logger) : ICliCommand<DeviceShowOptions>
 {
-    private readonly ILogger<DeviceShowCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<DeviceShowCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(DeviceShowOptions options)
     {
         _logger.LogInformation("Showing device {DeviceId}", options.DeviceId);
 
-        var device = await configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
+        var device = await _configRepository.GetDeviceAsync(options.DeviceId).ConfigureAwait(false);
 
-        formatter.WriteObject(
+        _formatter.WriteObject(
             device,
             ("ID", device.Id),
             ("Name", device.Name),

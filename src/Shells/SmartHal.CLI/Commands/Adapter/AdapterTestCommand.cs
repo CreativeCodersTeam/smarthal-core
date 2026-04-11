@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -18,25 +19,28 @@ public class AdapterTestCommand(
     OutputFormatter formatter,
     ILogger<AdapterTestCommand> logger) : ICliCommand<AdapterTestOptions>
 {
-    private readonly ILogger<AdapterTestCommand> _logger = logger;
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly IAdapterFactory _adapterFactory = Ensure.NotNull(adapterFactory);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<AdapterTestCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(AdapterTestOptions options)
     {
         _logger.LogInformation("Testing adapter connection for instance {InstanceId}", options.AdapterId);
 
-        var config = await configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
-        await using var adapter = adapterFactory.CreateAdapter(config);
+        var config = await _configRepository.GetAdapterConfigAsync(options.AdapterId).ConfigureAwait(false);
+        await using var adapter = _adapterFactory.CreateAdapter(config);
 
         var success = await adapter.TestConnectionAsync().ConfigureAwait(false);
 
         if (success)
         {
-            formatter.WriteSuccess($"Connection to '{options.AdapterId}' ({adapter.DisplayName}) successful.");
+            _formatter.WriteSuccess($"Connection to '{options.AdapterId}' ({adapter.DisplayName}) successful.");
             return CommandResult.Success;
         }
 
-        formatter.WriteError($"Connection to '{options.AdapterId}' failed.");
+        _formatter.WriteError($"Connection to '{options.AdapterId}' failed.");
         return new CommandResult(1);
     }
 }

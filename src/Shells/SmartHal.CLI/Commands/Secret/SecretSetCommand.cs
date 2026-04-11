@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -20,20 +21,25 @@ public class SecretSetCommand(
     OutputFormatter formatter,
     ILogger<SecretSetCommand> logger) : ICliCommand<SecretSetOptions>
 {
-    private readonly ILogger<SecretSetCommand> _logger = logger;
+    private readonly CliContext _cliContext = Ensure.NotNull(cliContext);
+    private readonly IConfigRepository _configRepository = Ensure.NotNull(configRepository);
+    private readonly SecretsProviderFactory _secretsFactory = Ensure.NotNull(secretsFactory);
+    private readonly IUserInteraction _interaction = Ensure.NotNull(interaction);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<SecretSetCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(SecretSetOptions options)
     {
         _logger.LogInformation("Setting secret {Key}", options.Key);
-        var meta = await configRepository.GetMetaAsync().ConfigureAwait(false);
-        var provider = secretsFactory.Create(meta.SecretsProvider, cliContext.ConfigPath);
+        var meta = await _configRepository.GetMetaAsync().ConfigureAwait(false);
+        var provider = _secretsFactory.Create(meta.SecretsProvider, _cliContext.ConfigPath);
 
-        var value = options.Value ?? interaction.ReadSecret($"Enter value for '{options.Key}': ");
+        var value = options.Value ?? _interaction.ReadSecret($"Enter value for '{options.Key}': ");
 
         await provider.SetSecretAsync(options.Key, value).ConfigureAwait(false);
 
-        formatter.WriteSuccess($"Secret '{options.Key}' set.");
+        _formatter.WriteSuccess($"Secret '{options.Key}' set.");
         return CommandResult.Success;
     }
 }

@@ -1,4 +1,5 @@
 using CreativeCoders.Cli.Core;
+using CreativeCoders.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using SmartHal.CLI.Infrastructure;
@@ -18,16 +19,19 @@ public class BackupShowCommand(
     OutputFormatter formatter,
     ILogger<BackupShowCommand> logger) : ICliCommand<BackupShowOptions>
 {
-    private readonly ILogger<BackupShowCommand> _logger = logger;
+    private readonly ISnapshotManager _snapshotManager = Ensure.NotNull(snapshotManager);
+    private readonly IAnsiConsole _console = Ensure.NotNull(console);
+    private readonly OutputFormatter _formatter = Ensure.NotNull(formatter);
+    private readonly ILogger<BackupShowCommand> _logger = Ensure.NotNull(logger);
 
     /// <inheritdoc />
     public async Task<CommandResult> ExecuteAsync(BackupShowOptions options)
     {
         _logger.LogInformation("Showing snapshot {SnapshotId}", options.SnapshotId);
 
-        var manifest = await snapshotManager.GetSnapshotAsync(options.SnapshotId).ConfigureAwait(false);
+        var manifest = await _snapshotManager.GetSnapshotAsync(options.SnapshotId).ConfigureAwait(false);
 
-        formatter.WriteObject(
+        _formatter.WriteObject(
             manifest,
             ("Snapshot ID", manifest.SnapshotId),
             ("Created", manifest.CreatedAt.ToString("o")),
@@ -40,8 +44,8 @@ public class BackupShowCommand(
 
         if (manifest.Entries.Count > 0)
         {
-            console.WriteLine();
-            formatter.WriteTable(
+            _console.WriteLine();
+            _formatter.WriteTable(
                 manifest.Entries.ToList(),
                 ("Device ID", e => e.DeviceId),
                 ("Adapter", e => e.AdapterId),
